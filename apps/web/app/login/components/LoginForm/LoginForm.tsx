@@ -28,7 +28,7 @@ export default function LoginForm() {
         )}
       </div>
       <div className={styles.input__wrapper}>
-        <label className={styles.label}>Пароль</label>
+        <label className={styles.label}>Password</label>
         <input
           className={styles.input}
           type="password"
@@ -41,11 +41,11 @@ export default function LoginForm() {
           </span>
         )}
         <Link href="/forgot-password" className={styles.input__link}>
-          Забыли пароль?
+          Forgot password?
         </Link>
       </div>
       <button className={styles.button} type="submit">
-        Войти
+        Sign in
       </button>
     </form>
   );

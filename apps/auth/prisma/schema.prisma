@@ -12,15 +12,27 @@ model User {
   email  String @unique
   password  String
   name      String?
-  role      Role     @default(CLIENT)
+
+  city      String?
+  status    Int
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
 
-enum Role {
-  CLIENT
-  MASTER
-  ADMIN
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }

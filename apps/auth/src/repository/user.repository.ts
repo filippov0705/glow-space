@@ -6,14 +6,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { email } });
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.prisma.user.findUnique({ where: { email } });
   }
 
-  createUser(
+  async createUser(
     user: Omit<User, 'id' | 'uuid' | 'createdAt' | 'updatedAt'>,
   ): Promise<User> {
-    return this.prisma.user.create({ data: user });
+    return await this.prisma.user.create({ data: user });
+  }
+
+  async findById(id: number): Promise<User | null> {
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 }
 

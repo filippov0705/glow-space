@@ -33,9 +33,9 @@ export default function GoogleButton() {
           </svg>
         </div>
         <span className={styles.gsiMaterialButton__contents}>
-          Продолжить с Google
+          Continue with Google
         </span>
-        <span style={{ display: "none" }}>Продолжить с Google</span>
+        <span style={{ display: "none" }}>Continue with Google</span>
       </div>
     </button>
   );

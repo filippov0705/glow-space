@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginInitialState } from "./components/LoginForm/LoginForm";
 import setCookieParser from "set-cookie-parser";
+import { Status } from "@glow-space/shared";
 
 export const getLoginAction = async (
   prevState: LoginInitialState,
@@ -23,15 +24,15 @@ export const getLoginAction = async (
   };
 
   if (!email || typeof email !== "string") {
-    res.fieldErrors.email = "Введите email";
+    res.fieldErrors.email = "Enter your email";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    res.fieldErrors.email = "Некорректный email";
+    res.fieldErrors.email = "Invalid email";
   }
 
   if (!password || typeof password !== "string") {
-    res.fieldErrors.password = "Введите пароль";
+    res.fieldErrors.password = "Enter password";
   } else if (password.length < 6) {
-    res.fieldErrors.password = "Минимум 6 символов";
+    res.fieldErrors.password = "At least 6 characters";
   }
 
   if (Object.values(res.fieldErrors).some((error) => error !== "")) {
@@ -43,11 +44,19 @@ export const getLoginAction = async (
     password,
   });
 
+  if (response.success && response.status === Status.PENDING_VERIFICATION) {
+    redirect("/dashboard?notice=pending");
+  }
+
+  if (response.success && response.status === Status.BLOCKED) {
+    redirect("/dashboard?notice=blocked");
+  }
+
   if (!response.success || !response.setCookie) {
     return {
       fieldErrors: {
         password: "",
-        email: "Некорректный email или пароль",
+        email: "Invalid email or password",
       },
       email,
       password,
@@ -61,7 +70,7 @@ export const getLoginAction = async (
     return {
       fieldErrors: {
         password: "",
-        email: "Некорректный email или пароль",
+        email: "Invalid email or password",
       },
       email,
       password,
