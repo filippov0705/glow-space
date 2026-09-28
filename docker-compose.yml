@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   postgres-auth:
     image: postgres:16
@@ -11,18 +11,17 @@ services:
     volumes:
       - pgdata-auth:/var/lib/postgresql/data
 
-  postgres-services:
+  postgres-user:
     image: postgres:16
     environment:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
-      POSTGRES_DB: services_db
+      POSTGRES_DB: user_db
     ports:
       - "5443:5432"
     volumes:
-      - pgdata-services:/var/lib/postgresql/data
-
+      - pgdata-user:/var/lib/postgresql/data
 
 volumes:
   pgdata-auth:
-  pgdata-services:
+  pgdata-user:

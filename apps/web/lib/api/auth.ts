@@ -6,6 +6,7 @@ type LoginResponse = {
   success: boolean;
   setCookie: string[] | null;
   status: Status | null;
+  uuid: string | null;
 };
 
 class AuthApi {
@@ -24,10 +25,11 @@ class AuthApi {
         success: true,
         setCookie: response.headers["set-cookie"] || null,
         status: response.data.status,
+        uuid: response.data.uuid,
       };
     } catch (error) {
       console.error(error);
-      return { success: false, setCookie: null, status: null };
+      return { success: false, setCookie: null, status: null, uuid: null };
     }
   }
 }

@@ -13,7 +13,6 @@ model User {
   password  String
   name      String?
 
-  city      String?
   status    Int
   
   createdAt DateTime @default(now())

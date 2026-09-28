@@ -1,4 +1,4 @@
-import { AuthService } from '../services/auth.service';
+import AuthService from '../services/auth.service';
 import {
   Body,
   Controller,
@@ -20,7 +20,7 @@ import {
 } from 'src/constants/auth.constants';
 
 @Controller()
-export class AuthController {
+class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/refresh')
@@ -92,3 +92,5 @@ export class AuthController {
     return { uuid: user.uuid, status: user.status };
   }
 }
+
+export default AuthController;

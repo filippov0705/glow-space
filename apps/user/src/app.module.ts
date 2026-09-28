@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import AuthController from './controllers/auth.controller';
-import AuthService from './services/auth.service';
-import UserRepository from './repository/user.repository';
-import PrismaService from '../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import RefreshTokenRepository from './repository/refreshToken.repository';
+import UserRepository from './repository/user.repository';
+import UserService from './services/user.service';
+import UserController from './controllers/user.controller';
+import UserResponder from './responders/user.responder';
 
 @Module({
   imports: [
@@ -20,12 +20,7 @@ import RefreshTokenRepository from './repository/refreshToken.repository';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [
-    AuthService,
-    UserRepository,
-    PrismaService,
-    RefreshTokenRepository,
-  ],
+  controllers: [UserController],
+  providers: [PrismaService, UserRepository, UserService, UserResponder],
 })
 export class AppModule {}

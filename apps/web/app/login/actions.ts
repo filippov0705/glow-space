@@ -1,11 +1,20 @@
 "use server";
 
 import authApi from "@/lib/api/auth";
+import userApi from "@/lib/api/user";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginInitialState } from "./components/LoginForm/LoginForm";
 import setCookieParser from "set-cookie-parser";
 import { Status } from "@glow-space/shared";
+import {
+  ACCESS_COOKIE_MAX_AGE,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_COOKIE_MAX_AGE,
+  REFRESH_TOKEN_COOKIE,
+  USER_COOKIE,
+} from "../constants";
+import { User } from "../types/user";
 
 export const getLoginAction = async (
   prevState: LoginInitialState,
@@ -39,20 +48,20 @@ export const getLoginAction = async (
     return res;
   }
 
-  const response = await authApi.login({
+  const { success, status, uuid, setCookie } = await authApi.login({
     email,
     password,
   });
 
-  if (response.success && response.status === Status.PENDING_VERIFICATION) {
-    redirect("/dashboard?notice=pending");
+  if (success && status === Status.PENDING_VERIFICATION) {
+    redirect("/?notice=pending");
   }
 
-  if (response.success && response.status === Status.BLOCKED) {
-    redirect("/dashboard?notice=blocked");
+  if (success && status === Status.BLOCKED) {
+    redirect("/?notice=blocked");
   }
 
-  if (!response.success || !response.setCookie) {
+  if (!success || !setCookie || !uuid) {
     return {
       fieldErrors: {
         password: "",
@@ -63,10 +72,11 @@ export const getLoginAction = async (
     };
   }
 
-  const parsed = setCookieParser.parse(response.setCookie, { map: true });
+  const parsed = setCookieParser.parse(setCookie, { map: true });
   const accessToken = parsed.access_token?.value;
+  const refreshToken = parsed.refresh_token?.value;
 
-  if (!accessToken) {
+  if (!accessToken || !refreshToken) {
     return {
       fieldErrors: {
         password: "",
@@ -79,13 +89,47 @@ export const getLoginAction = async (
 
   const cookieStore = await cookies();
 
-  cookieStore.set("access_token", accessToken, {
+  cookieStore.set(REFRESH_TOKEN_COOKIE, refreshToken, {
     httpOnly: true,
     secure: process.env.ENVIRONMENT === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: REFRESH_COOKIE_MAX_AGE,
   });
 
-  redirect("/dashboard");
+  cookieStore.set(ACCESS_TOKEN_COOKIE, accessToken, {
+    httpOnly: true,
+    secure: process.env.ENVIRONMENT === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: ACCESS_COOKIE_MAX_AGE,
+  });
+
+  const userResponse = await userApi.getUser(uuid);
+  if (!userResponse) {
+    return {
+      fieldErrors: {
+        password: "",
+        email: "Invalid email or password",
+      },
+      email,
+      password,
+    };
+  }
+
+  const user: User = {
+    uuid,
+    email: userResponse.email,
+    city: userResponse.city,
+  };
+
+  cookieStore.set(USER_COOKIE, JSON.stringify(user), {
+    httpOnly: true,
+    secure: process.env.ENVIRONMENT === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: REFRESH_COOKIE_MAX_AGE,
+  });
+
+  redirect("/");
 };

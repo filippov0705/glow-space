@@ -9,7 +9,7 @@ import { createHash, randomBytes } from 'crypto';
 import { REFRESH_TOKEN_TTL_MS } from 'src/constants/auth.constants';
 
 @Injectable()
-export class AuthService {
+class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
@@ -76,3 +76,5 @@ export class AuthService {
     return { id: user.id, uuid: user.uuid, status: user.status };
   }
 }
+
+export default AuthService;
