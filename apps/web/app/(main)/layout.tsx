@@ -17,8 +17,7 @@ export default async function MainLayout({
 
   const cityCookie = cookieStore.get(CITY_COOKIE)?.value;
 
-  const city =
-    cityCookie ?? user?.city ?? (await getCityFromIpAction()) ?? DEFAULT_CITY;
+  const city = cityCookie ?? (await getCityFromIpAction()) ?? DEFAULT_CITY;
 
   return (
     <>

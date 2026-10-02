@@ -1,19 +1,10 @@
-const ACCESS_TOKEN_COOKIE = "access_token";
-const REFRESH_TOKEN_COOKIE = "refresh_token";
-const USER_COOKIE = "user";
-const CITY_COOKIE = "city";
-const DEFAULT_CITY = "Vilnius";
-const REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const ACCESS_COOKIE_MAX_AGE = 15 * 60;
-const GEOLOCATION_URL = "https://ipwho.is";
-
-export {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-  USER_COOKIE,
-  REFRESH_COOKIE_MAX_AGE,
-  ACCESS_COOKIE_MAX_AGE,
-  CITY_COOKIE,
-  DEFAULT_CITY,
-  GEOLOCATION_URL,
-};
+export const ACCESS_TOKEN_COOKIE = "access_token";
+export const REFRESH_TOKEN_COOKIE = "refresh_token";
+export const USER_COOKIE = "user";
+export const CITY_COOKIE = "city";
+export const DEFAULT_CITY = "Vilnius";
+export const REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+export const ACCESS_COOKIE_MAX_AGE = 15 * 60;
+export const GEOLOCATION_URL = "https://ipwho.is";
+export const GOOGLE_STATE_COOKIE = "google_state";
+export const GOOGLE_STATE_MAX_AGE = 60 * 60 * 24 * 7;

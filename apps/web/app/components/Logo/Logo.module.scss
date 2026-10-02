@@ -1,9 +1,6 @@
 .logo {
   display: flex;
   align-items: center;
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: -0.5px;
   color: #1a1a1a;
   text-decoration: none;
 
@@ -13,5 +10,17 @@
 
   &__text {
     margin-left: 4px;
+  }
+
+  &--medium {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+  }
+
+  &--small {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
   }
 }

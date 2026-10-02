@@ -6,6 +6,7 @@ import PrismaService from '../prisma/prisma.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import RefreshTokenRepository from './repository/refreshToken.repository';
+import OAuth2Client from './api/oauth2Client';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import RefreshTokenRepository from './repository/refreshToken.repository';
     UserRepository,
     PrismaService,
     RefreshTokenRepository,
+    OAuth2Client,
   ],
 })
 export class AppModule {}

@@ -11,6 +11,12 @@ class UserRepository {
       where: { uuid: userUUID },
     });
   }
+
+  async create(
+    user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<User> {
+    return await this.prisma.user.create({ data: user });
+  }
 }
 
 export default UserRepository;

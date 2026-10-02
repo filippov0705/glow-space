@@ -16,7 +16,7 @@ export default function Header({ user, city }: HeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.header__left}>
-        <Logo />
+        <Logo logoSize="small" />
         <CityButton city={city} onClick={() => {}} />
       </div>
       <div className={styles.header__right}>

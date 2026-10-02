@@ -2,7 +2,7 @@ import styles from "./GoogleButton.module.scss";
 
 export default function GoogleButton() {
   return (
-    <button className={styles.gsiMaterialButton}>
+    <a href="/api/auth/google" className={styles.gsiMaterialButton}>
       <div className={styles.gsiMaterialButton__state}></div>
       <div className={styles.gsiMaterialButton__contentWrapper}>
         <div className={styles.gsiMaterialButton__icon}>
@@ -37,6 +37,6 @@ export default function GoogleButton() {
         </span>
         <span style={{ display: "none" }}>Continue with Google</span>
       </div>
-    </button>
+    </a>
   );
 }

@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginInitialState } from "./components/LoginForm/LoginForm";
 import setCookieParser from "set-cookie-parser";
-import { Status } from "@glow-space/shared";
+import { Status, isEmailValid } from "@glow-space/shared";
 import {
   ACCESS_COOKIE_MAX_AGE,
   ACCESS_TOKEN_COOKIE,
@@ -34,14 +34,12 @@ export const getLoginAction = async (
 
   if (!email || typeof email !== "string") {
     res.fieldErrors.email = "Enter your email";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  } else if (!isEmailValid(email)) {
     res.fieldErrors.email = "Invalid email";
   }
 
   if (!password || typeof password !== "string") {
     res.fieldErrors.password = "Enter password";
-  } else if (password.length < 6) {
-    res.fieldErrors.password = "At least 6 characters";
   }
 
   if (Object.values(res.fieldErrors).some((error) => error !== "")) {
@@ -120,7 +118,6 @@ export const getLoginAction = async (
   const user: User = {
     uuid,
     email: userResponse.email,
-    city: userResponse.city,
   };
 
   cookieStore.set(USER_COOKIE, JSON.stringify(user), {

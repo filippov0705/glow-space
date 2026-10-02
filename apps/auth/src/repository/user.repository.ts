@@ -19,6 +19,27 @@ class UserRepository {
   async findById(id: number): Promise<User | null> {
     return await this.prisma.user.findUnique({ where: { id } });
   }
+
+  async create(
+    user: Omit<User, 'id' | 'uuid' | 'createdAt' | 'updatedAt'>,
+  ): Promise<User> {
+    return await this.prisma.user.create({ data: user });
+  }
+
+  async update(
+    id: number,
+    user: Omit<User, 'id' | 'uuid' | 'createdAt' | 'updatedAt'>,
+  ): Promise<User> {
+    return await this.prisma.user.update({ where: { id }, data: user });
+  }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return await this.prisma.user.findUnique({ where: { googleId } });
+  }
+
+  async delete(uuid: string): Promise<void> {
+    await this.prisma.user.delete({ where: { uuid } });
+  }
 }
 
 export default UserRepository;

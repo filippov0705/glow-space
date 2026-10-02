@@ -10,7 +10,6 @@ class UserResponder {
     return {
       uuid: user.uuid,
       email: user.email,
-      city: user.city || '',
     };
   }
 }
