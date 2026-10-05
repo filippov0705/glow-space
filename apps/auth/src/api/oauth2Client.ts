@@ -11,7 +11,9 @@ class OAuth2Client {
     });
   }
 
-  async getToken(code: string): Promise<string> {
+  async getToken(
+    code: string,
+  ): Promise<{ access_token: string; id_token: string }> {
     const response = await this.client.post(
       '/token',
       new URLSearchParams({
@@ -22,13 +24,6 @@ class OAuth2Client {
         grant_type: 'authorization_code',
       }),
     );
-    return response.data.access_token;
-  }
-
-  async getUserInfo(accessToken: string): Promise<any> {
-    const response = await this.client.get('/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
     return response.data;
   }
 }

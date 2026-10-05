@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RefreshToken } from '@prisma/client';
+import { RefreshToken } from 'src/generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
 import { convertDateForSQL } from '@glow-space/shared';
 
@@ -31,6 +31,12 @@ class RefreshTokenRepository {
     return await this.prisma.refreshToken.update({
       where: { id },
       data: { revokedAt: convertDateForSQL(new Date()) },
+    });
+  }
+
+  async delete(tokenHash: string): Promise<void> {
+    await this.prisma.refreshToken.deleteMany({
+      where: { tokenHash },
     });
   }
 }

@@ -43,13 +43,13 @@ export class UserController {
   @Post('/register')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async register(@Body() body: RegisterDTO): Promise<{ uuid: string }> {
-    await this.userRepository.create({
+    const user = await this.userRepository.create({
       uuid: body.uuid,
       email: body.email,
       name: body.name,
     });
 
-    return { uuid: body.uuid };
+    return this.userResponder.registerResponse(user);
   }
 }
 

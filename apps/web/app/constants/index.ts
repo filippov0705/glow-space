@@ -8,3 +8,4 @@ export const ACCESS_COOKIE_MAX_AGE = 15 * 60;
 export const GEOLOCATION_URL = "https://ipwho.is";
 export const GOOGLE_STATE_COOKIE = "google_state";
 export const GOOGLE_STATE_MAX_AGE = 60 * 60 * 24 * 7;
+export const REGISTER_RETRY_COUNT = 4;

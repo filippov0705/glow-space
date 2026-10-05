@@ -103,8 +103,8 @@ export const getLoginAction = async (
     maxAge: ACCESS_COOKIE_MAX_AGE,
   });
 
-  const userResponse = await userApi.getUser(uuid);
-  if (!userResponse) {
+  const userResponse = await userApi.getUser(uuid, accessToken);
+  if (!userResponse.success || !userResponse.user) {
     return {
       fieldErrors: {
         password: "",
@@ -117,7 +117,8 @@ export const getLoginAction = async (
 
   const user: User = {
     uuid,
-    email: userResponse.email,
+    email: userResponse.user.email,
+    name: userResponse.user.name,
   };
 
   cookieStore.set(USER_COOKIE, JSON.stringify(user), {

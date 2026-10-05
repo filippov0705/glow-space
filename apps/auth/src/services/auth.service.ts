@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { User } from 'src/generated/prisma';
 import { LoginDTO } from 'src/dto/login.dto';
 import UserRepository from 'src/repository/user.repository';
 import RefreshTokenRepository from 'src/repository/refreshToken.repository';
@@ -17,7 +17,6 @@ import { RegisterDTO } from 'src/dto/register.dto';
 import { Status } from '@glow-space/shared';
 import { GoogleLoginDTO } from 'src/dto/google.login.dto';
 import OAuth2Client from 'src/api/oauth2Client';
-import e from 'express';
 
 @Injectable()
 class AuthService {
@@ -43,6 +42,12 @@ class AuthService {
     });
 
     return user;
+  }
+
+  async logout(refreshToken: string): Promise<void> {
+    const tokenHash = createHash('sha256').update(refreshToken).digest('hex');
+
+    await this.refreshTokenRepository.delete(tokenHash);
   }
 
   async refreshTokens(
@@ -105,9 +110,19 @@ class AuthService {
     return { id: user.id, uuid: user.uuid, status: user.status };
   }
 
-  async googleLogin(code: string): Promise<User> {
-    const accessToken = await this.oauth2Client.getToken(code);
-    const { email, sub } = await this.oauth2Client.getUserInfo(accessToken);
+  async googleLogin(code: string): Promise<{ isNewUser: boolean; user: User }> {
+    const { id_token } = await this.oauth2Client.getToken(code);
+
+    const { sub, email, email_verified, name } = this.jwtService.decode<{
+      sub: string;
+      email: string;
+      email_verified: boolean;
+      name: string;
+    }>(id_token);
+
+    if (!email_verified) {
+      throw new ForbiddenException('Email not verified');
+    }
 
     const sameSubUser = await this.userRepository.findByGoogleId(sub);
     if (sameSubUser) {
@@ -115,7 +130,7 @@ class AuthService {
         throw new ForbiddenException('User is blocked');
       }
 
-      return sameSubUser;
+      return { isNewUser: false, user: sameSubUser };
     }
 
     const existingUser = await this.userRepository.findByEmail(email);
@@ -136,18 +151,18 @@ class AuthService {
       existingUser.status = Status.ACTIVE;
 
       await this.userRepository.update(existingUser.id, existingUser);
-      return existingUser;
+      return { isNewUser: false, user: existingUser };
     }
 
     const user = await this.userRepository.create({
       email,
       password: null,
-      name: null,
+      name: name || email.split('@')[0],
       status: Status.ACTIVE,
       googleId: sub,
     });
 
-    return user;
+    return { isNewUser: true, user };
   }
 }
 

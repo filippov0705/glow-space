@@ -13,7 +13,12 @@ export default async function MainLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(USER_COOKIE)?.value;
-  const user = raw ? (JSON.parse(raw) as User) : null;
+  // const user = raw ? (JSON.parse(raw) as User) : null;
+  const user = {
+    uuid: "123",
+    email: "test@test.com",
+    name: "Test User",
+  } as User;
 
   const cityCookie = cookieStore.get(CITY_COOKIE)?.value;
 

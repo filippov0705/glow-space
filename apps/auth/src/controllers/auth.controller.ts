@@ -21,16 +21,31 @@ import {
   REFRESH_TOKEN_TTL_MS,
 } from 'src/constants/auth.constants';
 import { RegisterDTO } from 'src/dto/register.dto';
-import { Status } from '@glow-space/shared';
+import { GoogleAuthResponse, Status } from '@glow-space/shared';
 import UserRepository from 'src/repository/user.repository';
 import { GoogleLoginDTO } from 'src/dto/google.login.dto';
+import UserResponder from '../../responders/user.responder';
+import RefreshTokenRepository from 'src/repository/refreshToken.repository';
 
 @Controller()
 class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userRepository: UserRepository,
+    private readonly userResponder: UserResponder,
   ) {}
+
+  @Post('/logout')
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const raw = req.cookies?.[REFRESH_TOKEN_COOKIE];
+
+    if (!raw) throw new UnauthorizedException();
+
+    await this.authService.logout(raw);
+  }
 
   @Post('/refresh')
   async refresh(
@@ -39,9 +54,7 @@ class AuthController {
   ) {
     const raw = req.cookies?.[REFRESH_TOKEN_COOKIE];
 
-    if (!raw) {
-      throw new UnauthorizedException();
-    }
+    if (!raw) throw new UnauthorizedException();
 
     const { accessToken, refreshToken } =
       await this.authService.refreshTokens(raw);
@@ -119,8 +132,8 @@ class AuthController {
   async google(
     @Body() body: GoogleLoginDTO,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ uuid: string; status: Status }> {
-    const user = await this.authService.googleLogin(body.code);
+  ): Promise<GoogleAuthResponse> {
+    const { isNewUser, user } = await this.authService.googleLogin(body.code);
 
     const { accessToken, refreshToken } =
       await this.authService.generateTokens(user);
@@ -141,7 +154,7 @@ class AuthController {
       maxAge: REFRESH_TOKEN_TTL_MS,
     });
 
-    return { uuid: user.uuid, status: user.status };
+    return this.userResponder.googleAuthResponse(user, isNewUser);
   }
 }
 

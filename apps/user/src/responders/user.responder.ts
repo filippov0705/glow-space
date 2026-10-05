@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserResponse } from '@glow-space/shared';
-import { User } from '@prisma/client';
+import { RegisterResponse, UserResponse } from '@glow-space/shared';
+import { User } from 'src/generated/prisma';
 
 @Injectable()
 class UserResponder {
@@ -10,6 +10,15 @@ class UserResponder {
     return {
       uuid: user.uuid,
       email: user.email,
+      name: user.name,
+    };
+  }
+
+  async registerResponse(user: User): Promise<RegisterResponse> {
+    return {
+      uuid: user.uuid,
+      email: user.email,
+      name: user.name,
     };
   }
 }

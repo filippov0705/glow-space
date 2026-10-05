@@ -6,6 +6,7 @@ import styles from "./Header.module.scss";
 import { User } from "../../types/user";
 import Button from "../Button/Button";
 import { redirect } from "next/navigation";
+import { UserMenu } from "../UserMenu/UserMenu";
 
 type HeaderProps = {
   user: User | null;
@@ -23,10 +24,27 @@ export default function Header({ user, city }: HeaderProps) {
         <Button variant="primary" onClick={() => {}}>
           Become a Master
         </Button>
-        <Button variant="secondary" onClick={() => redirect("/login")}>
-          Sign In
-        </Button>
+        {user ? (
+          <UserMenu
+            name={user.name}
+            email={user.email}
+            initials={getInitials(user.name)}
+          />
+        ) : (
+          <Button variant="secondary" onClick={() => redirect("/login")}>
+            Sign In
+          </Button>
+        )}
       </div>
     </header>
   );
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }
