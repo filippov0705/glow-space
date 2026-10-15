@@ -12,9 +12,24 @@ model User {
   uuid   String @unique @default(uuid())
   email  String @unique
   name      String
+  cityId Int?  @map("city_id")
+  city   City? @relation(fields: [cityId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model City {
+  id       Int     @id @default(autoincrement())
+  slug     String  @unique   
+  name     String        
+  country  String
+  lat      Float
+  lng      Float
+  isActive Boolean @default(true) @map("is_active")
+  users    User[]
+
+  @@map("cities")
 }

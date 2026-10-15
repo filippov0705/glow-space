@@ -11,6 +11,10 @@ export type UserResponse = {
   name: string;
 };
 
+export type UserCityResponse = UserResponse & {
+  city: { slug: string; name: string };
+};
+
 export type RegisterResponse = {
   uuid: string;
   email: string;

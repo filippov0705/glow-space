@@ -11,7 +11,7 @@ class UserResponder {
         uuid: user.uuid,
         status: user.status,
         email: user.email,
-        name: user.name,
+        name: user.name ?? user.email.split('@')[0],
       },
     };
   }

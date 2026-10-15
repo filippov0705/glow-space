@@ -9,3 +9,10 @@ run auth microservice:
 ~/glow-space/apps/auth
 
 npm run start
+
+~/glow-space/apps/user
+
+npx prisma migrate dev --name add_cities
+npx prisma db seed
+
+npx prisma generate

@@ -4,6 +4,7 @@ export { Status } from "./types/user.js";
 export type {
   GoogleAuthResponse,
   UserResponse,
+  UserCityResponse,
   RegisterResponse,
 } from "./responses/user.js";
 export { PASSWORD_MIN_LENGTH, NAME_MIN_LENGTH } from "./constants/index.js";

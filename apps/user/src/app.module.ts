@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import UserRepository from './repository/user.repository';
+import CityRepository from './repository/city.repository';
 import UserService from './services/user.service';
 import UserController from './controllers/user.controller';
 import UserResponder from './responders/user.responder';
@@ -21,6 +22,12 @@ import UserResponder from './responders/user.responder';
     }),
   ],
   controllers: [UserController],
-  providers: [PrismaService, UserRepository, UserService, UserResponder],
+  providers: [
+    PrismaService,
+    UserRepository,
+    CityRepository,
+    UserService,
+    UserResponder,
+  ],
 })
 export class AppModule {}
