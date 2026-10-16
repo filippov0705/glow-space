@@ -52,7 +52,7 @@ export const getLoginAction = async (
   });
 
   if (success && status === Status.PENDING_VERIFICATION) {
-    redirect("/?notice=pending");
+    return { ...res, pendingVerification: true };
   }
 
   if (success && status === Status.BLOCKED) {

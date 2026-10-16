@@ -8,9 +8,23 @@ import path from "node:path";
 
 const repoRoot = path.resolve(__dirname, "../../..");
 
-function databaseUrl(app: "auth" | "user"): string | undefined {
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is not set (see .mcp.json)`);
+  return value;
+}
+
+// Host, port and database come from the service's DATABASE_URL,
+// credentials are replaced with the read-only MCP user.
+function databaseUrl(app: "auth" | "user"): string {
   const file = readFileSync(path.join(repoRoot, "apps", app, ".env"), "utf8");
-  return parseEnv(file).DATABASE_URL;
+  const serviceUrl = parseEnv(file).DATABASE_URL;
+  if (!serviceUrl) throw new Error(`DATABASE_URL is missing in apps/${app}/.env`);
+
+  const url = new URL(serviceUrl);
+  url.username = requireEnv("MCP_DB_USER");
+  url.password = requireEnv("MCP_DB_PASSWORD");
+  return url.toString();
 }
 
 const pools = {

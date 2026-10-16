@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model City {
+  id      Int      @id @default(autoincrement())
+  slug    String   @unique
+  name    String
+  country String
+  lat     Float
+  lng     Float
+  masters Master[]
+
+  @@map("cities")
+}
+
+model Category {
+  id        Int              @id @default(autoincrement())
+  slug      String           @unique
+  name      String
+  sortOrder Int              @default(0) @map("sort_order")
+  masters   MasterCategory[]
+
+  @@map("categories")
+}
+
+model Master {
+  id           Int    @id @default(autoincrement())
+  uuid         String @unique @default(uuid())
+  userUuid     String @unique @map("user_uuid")
+  displayName  String @map("display_name")
+  status       Int
+  cityId       Int    @map("city_id")
+  address      String
+  lat          Float
+  lng          Float
+  rating       Float?
+  reviewsCount Int    @default(0) @map("reviews_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  city       City             @relation(fields: [cityId], references: [id])
+  categories MasterCategory[]
+  works      Work[]
+
+  @@index([cityId, status, rating])
+  @@map("masters")
+}
+
+model MasterCategory {
+  masterId   Int @map("master_id")
+  categoryId Int @map("category_id")
+
+  master   Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+  works    Work[]
+
+  @@id([masterId, categoryId])
+  @@map("master_categories")
+}
+
+model Work {
+  id         Int      @id @default(autoincrement())
+  masterId   Int      @map("master_id")
+  categoryId Int      @map("category_id")
+  imageUrl   String   @map("image_url")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  master         Master         @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  // The work's category must be one of the master's categories.
+  masterCategory MasterCategory @relation(fields: [masterId, categoryId], references: [masterId, categoryId], onDelete: Cascade)
+
+  @@index([masterId, sortOrder])
+  @@map("works")
+}

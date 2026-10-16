@@ -2,7 +2,11 @@
   "mcpServers": {
     "glow-db": {
       "command": "tools/mcp-db/node_modules/.bin/tsx",
-      "args": ["tools/mcp-db/src/index.ts"]
+      "args": ["tools/mcp-db/src/index.ts"],
+      "env": {
+        "MCP_DB_USER": "mcp_reader",
+        "MCP_DB_PASSWORD": "mcp_reader"
+      }
     }
   }
 }

@@ -8,6 +8,9 @@ import { JwtModule } from '@nestjs/jwt';
 import RefreshTokenRepository from './repository/refreshToken.repository';
 import OAuth2Client from './api/oauth2Client';
 import UserResponder from '../responders/user.responder';
+import EmailVerificationTokenRepository from './repository/emailVerificationToken.repository';
+import EmailVerificationService from './services/emailVerification.service';
+import MailClient from './api/mailClient';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import UserResponder from '../responders/user.responder';
     RefreshTokenRepository,
     OAuth2Client,
     UserResponder,
+    EmailVerificationTokenRepository,
+    EmailVerificationService,
+    MailClient,
   ],
 })
 export class AppModule {}

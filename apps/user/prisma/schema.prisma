@@ -28,7 +28,6 @@ model City {
   country  String
   lat      Float
   lng      Float
-  isActive Boolean @default(true) @map("is_active")
   users    User[]
 
   @@map("cities")

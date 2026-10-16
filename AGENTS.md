@@ -8,15 +8,16 @@ Glow Space is a beauty marketplace in an npm-workspaces + Turborepo monorepo:
 
 - `apps/auth`: NestJS service (port 3001) for credentials, Google OAuth, and JWT plus refresh-token issuance. Its Postgres is `auth_db` on port 5442.
 - `apps/user`: NestJS service (port 3002) for user profiles and cities. Its Postgres is `user_db` on port 5443.
+- `apps/masters`: NestJS service (port 3003) for the public catalog: categories, master profiles, works, ratings. Its Postgres is `masters_db` on port 5444.
 - `apps/web`: Next.js 16 / React 19 frontend that uses server actions, SCSS modules and Tailwind 4.
 - `apps/gateway`: NestJS scaffold.
-- `packages/shared`: `@glow-space/shared`, which holds the types, enums (`Status`), response contracts, validators and utils shared by all apps.
+- `packages/shared`: `@glow-space/shared`, which holds the types, enums (`Status`, `MasterStatus`), response contracts, seed data (`CITIES`), validators and utils shared by all apps.
 
 `apps/web` has its own `CLAUDE.md`/`AGENTS.md`. The Next.js version there has breaking changes compared with what you may know, so read the relevant guide in `apps/web/node_modules/next/dist/docs/` before writing Next.js code.
 
 ## Commands
 
-Infrastructure (Postgres ×2 and Kafka):
+Infrastructure (Postgres ×3 and Kafka):
 
 ```
 docker compose up -d
@@ -24,15 +25,12 @@ docker compose up -d
 
 Setup:
 
-- Copy each `.env.example` to `.env`: `apps/auth`, `apps/user`, `apps/web`. Google OAuth also needs `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REDIRECT_URI` in both auth and web. Web also needs `USER_URL`.
-- Build the shared package before running anything that imports it. Apps consume its compiled `dist/` output, so rebuild after every change to `packages/shared`:
-  ```
-  cd packages/shared && npm run build
-  ```
+- Copy each `.env.example` to `.env`: `apps/auth`, `apps/user`, `apps/masters`, `apps/web`. Google OAuth also needs `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `GOOGLE_REDIRECT_URI` in both auth and web. Web also needs `USER_URL`.
+- Build the shared package before running anything that imports it. Apps consume its compiled `dist/` output.
 
 Root (via turbo): `npm run dev`, `npm run build`, `npm run lint`.
 
-Per NestJS service (`apps/auth`, `apps/user`, `apps/gateway`):
+Per NestJS service (`apps/auth`, `apps/user`, `apps/masters`, `apps/gateway`):
 
 ```
 npm run start:dev                 # watch mode
@@ -45,19 +43,20 @@ npm run test:e2e
 
 Web (`apps/web`): `npm run dev`, `npm run build`, `npm run lint`. It has no test runner.
 
-Prisma (run inside `apps/auth` or `apps/user`):
+Prisma (run inside `apps/auth`, `apps/user` or `apps/masters`):
 
 ```
 npx prisma migrate dev --name <name>
 npx prisma generate
-npx prisma db seed                # user service only (prisma/seed.ts)
+npx prisma db seed                # user and masters (prisma/seed.ts)
 ```
 
 Prisma 7 is configured through `prisma.config.ts`, which supplies the datasource URL from `.env`. The client is generated into `src/generated/prisma`, which is gitignored, and is imported as `src/generated/prisma`. `PrismaService` uses the `@prisma/adapter-pg` driver adapter.
 
 ## Architecture
 
-- **Separate databases.** Auth and user each own a `User` row linked by the same `uuid`.
+- **Separate databases.** Auth and user each own a `User` row linked by the same `uuid`. A master in masters points to its user via `Master.userUuid`.
+- **Cities are duplicated.** `user` and `masters` each have a `cities` table seeded from `CITIES` in `@glow-space/shared`. Ids differ between databases, so services pass a city by `slug`, never by id.
 - **Web server actions orchestrate cross-service flows.** Registration (`apps/web/app/register/actions.ts`) creates the user in auth, then in user, and on failure compensates via auth `DELETE /register/:uuid`.
 - **Auth tokens.** Auth issues a JWT access token plus a rotating refresh token (only its hash is stored) as cookies. Web calls auth server-side and re-sets those cookies on its own domain. The user service verifies the JWT itself (`JwtAuthGuard`), so `JWT_SECRET` must match in auth and user.
 

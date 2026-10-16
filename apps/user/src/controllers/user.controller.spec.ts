@@ -41,7 +41,7 @@ describe('UserController', () => {
     it('updates the city of the authenticated user and returns the profile with the city', async () => {
       userService.updateCity.mockResolvedValue({
         user: { uuid: 'uuid-1', email: 'a@b.c', name: 'Ann', cityId: 7 },
-        city: { id: 7, slug: 'riga', name: 'Riga', isActive: true },
+        city: { id: 7, slug: 'riga', name: 'Riga' },
       });
 
       const req = { user: { sub: 'uuid-1' } } as JwtAuthGuardRequest;

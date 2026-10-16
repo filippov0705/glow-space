@@ -123,6 +123,26 @@ export class AuthApi {
     }
   }
 
+  async verifyEmail(token: string): Promise<{ success: boolean }> {
+    try {
+      await this.client.post("/verify-email", { token });
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      return { success: false };
+    }
+  }
+
+  async resendVerification(email: string): Promise<{ success: boolean }> {
+    try {
+      await this.client.post("/verify-email/resend", { email });
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      return { success: false };
+    }
+  }
+
   async logout(refreshToken: string): Promise<void> {
     try {
       await this.client.post(

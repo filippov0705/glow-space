@@ -15,7 +15,7 @@ class UserService {
     citySlug: string,
   ): Promise<{ user: User; city: City }> {
     const city = await this.cityRepository.findBySlug(citySlug);
-    if (!city || !city.isActive) {
+    if (!city) {
       throw new NotFoundException('City not found');
     }
 

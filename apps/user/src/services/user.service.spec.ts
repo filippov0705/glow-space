@@ -19,7 +19,7 @@ describe('UserService', () => {
   });
 
   describe('updateCity', () => {
-    const city = { id: 7, slug: 'riga', name: 'Riga', isActive: true } as City;
+    const city = { id: 7, slug: 'riga', name: 'Riga' } as City;
 
     it('sets the city and returns the user with the city', async () => {
       const user = { uuid: 'uuid-1', cityId: 7 } as User;
@@ -38,15 +38,6 @@ describe('UserService', () => {
       cityRepository.findBySlug.mockResolvedValue(null);
 
       await expect(service.updateCity('uuid-1', 'atlantis')).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(userRepository.updateCity).not.toHaveBeenCalled();
-    });
-
-    it('throws NotFoundException when the city is inactive', async () => {
-      cityRepository.findBySlug.mockResolvedValue({ ...city, isActive: false });
-
-      await expect(service.updateCity('uuid-1', 'riga')).rejects.toThrow(
         NotFoundException,
       );
       expect(userRepository.updateCity).not.toHaveBeenCalled();

@@ -19,6 +19,7 @@ export default function RegisterForm() {
           <input
             className={styles.form__input}
             id="name"
+            name="name"
             type="text"
             placeholder="Anna"
             defaultValue={state.name}
@@ -32,6 +33,7 @@ export default function RegisterForm() {
           <input
             className={styles.form__input}
             id="email"
+            name="email"
             type="email"
             placeholder="anna@example.com"
             defaultValue={state.email}
@@ -47,6 +49,7 @@ export default function RegisterForm() {
           <input
             className={styles.form__input}
             id="password"
+            name="password"
             type="password"
             placeholder="At least 8 characters"
             defaultValue={state.password}

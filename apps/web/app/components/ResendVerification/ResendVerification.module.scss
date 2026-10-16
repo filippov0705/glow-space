@@ -1,0 +1,23 @@
+.notice {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background-color: #f4f4f5;
+
+  &__text {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  &__button {
+    font-size: 13px;
+    color: #2563eb;
+    background: none;
+  }
+
+  &__error {
+    font-size: 13px;
+    margin-top: 8px;
+    color: #ff0000;
+  }
+}
