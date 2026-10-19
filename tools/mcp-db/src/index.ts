@@ -16,7 +16,7 @@ function requireEnv(name: string): string {
 
 // Host, port and database come from the service's DATABASE_URL,
 // credentials are replaced with the read-only MCP user.
-function databaseUrl(app: "auth" | "user"): string {
+function databaseUrl(app: "auth" | "user" | "masters"): string {
   const file = readFileSync(path.join(repoRoot, "apps", app, ".env"), "utf8");
   const serviceUrl = parseEnv(file).DATABASE_URL;
   if (!serviceUrl) throw new Error(`DATABASE_URL is missing in apps/${app}/.env`);
@@ -34,6 +34,10 @@ const pools = {
   }),
   user: new Pool({
     connectionString: process.env.USER_DB_URL ?? databaseUrl("user"),
+    statement_timeout: 5000,
+  }),
+  masters: new Pool({
+    connectionString: process.env.MASTERS_DB_URL ?? databaseUrl("masters"),
     statement_timeout: 5000,
   }),
 };
@@ -102,6 +106,70 @@ server.registerTool(
             ],
           });
         }
+      }
+    }
+
+    return {
+      content: [{ type: "text", text: JSON.stringify({ result }) }],
+    };
+  },
+);
+
+server.registerTool(
+  "check_master_users",
+  {
+    description:
+      "Check that every master in masters_db points to an existing user. " +
+      "Use it when a master profile shows no owner, when a user cannot see or edit their master profile, " +
+      "or after seeding or creating masters. " +
+      "Returns masters whose user_uuid is missing in user_db, in auth_db, or in both.",
+    inputSchema: z.object({}),
+  },
+  async () => {
+    const { rows: masters } = await pools.masters.query(`
+      SELECT uuid, user_uuid, display_name
+      FROM masters
+    `);
+    const { rows: authUsers } = await pools.auth.query(`
+      SELECT uuid
+      FROM users
+    `);
+    const { rows: userUsers } = await pools.user.query(`
+      SELECT uuid
+      FROM users
+    `);
+
+    const authUuids = new Set(authUsers.map((user) => user.uuid));
+    const userUuids = new Set(userUsers.map((user) => user.uuid));
+
+    const result: {
+      isConsistent: boolean;
+      mastersChecked: number;
+      invalid: {
+        uuid: string;
+        userUuid: string;
+        displayName: string;
+        missingIn: ("auth" | "user")[];
+      }[];
+    } = {
+      isConsistent: true,
+      mastersChecked: masters.length,
+      invalid: [],
+    };
+
+    for (const master of masters) {
+      const missingIn: ("auth" | "user")[] = [];
+      if (!authUuids.has(master.user_uuid)) missingIn.push("auth");
+      if (!userUuids.has(master.user_uuid)) missingIn.push("user");
+
+      if (missingIn.length > 0) {
+        result.isConsistent = false;
+        result.invalid.push({
+          uuid: master.uuid,
+          userUuid: master.user_uuid,
+          displayName: master.display_name,
+          missingIn,
+        });
       }
     }
 

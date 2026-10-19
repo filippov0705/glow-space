@@ -1,0 +1,36 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e3df;
+  border-radius: 14px;
+  background: white;
+
+  &__photo {
+    height: 135px;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+  }
+
+  &__name {
+    margin: 0px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  &__category {
+    margin: 0px;
+    font-size: 13px;
+    color: rgb(92, 90, 87);
+  }
+
+  &__rating {
+    margin: 4px 0px 0px;
+  }
+}

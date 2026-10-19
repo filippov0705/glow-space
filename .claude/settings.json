@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(sed -n *)",
+      "Bash(cat *)",
+      "Bash(ls *)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -11,6 +20,11 @@
             "statusMessage": "Rebuilding packages/shared"
           }
         ]
+      },
+      {
+        "type": "command",
+        "command": "node",
+        "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/check-env.cjs"]
       }
     ]
   }

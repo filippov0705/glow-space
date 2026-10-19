@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import MasterService from './master.service';
 import CityRepository from '../repository/city.repository';
 import MasterRepository, { MasterCard } from '../repository/master.repository';
-import { City, Master } from 'src/generated/prisma';
+import { City } from 'src/generated/prisma';
 
 const card = (id: number) => ({ id }) as MasterCard;
 
@@ -13,7 +13,7 @@ describe('MasterService', () => {
     findTopRatedCards: jest.Mock;
     findRandomUnratedIds: jest.Mock;
     findCardsByIds: jest.Mock;
-    findActiveByCity: jest.Mock;
+    findActiveCardsByCity: jest.Mock;
   };
   let service: MasterService;
 
@@ -23,7 +23,7 @@ describe('MasterService', () => {
       findTopRatedCards: jest.fn(),
       findRandomUnratedIds: jest.fn(),
       findCardsByIds: jest.fn(),
-      findActiveByCity: jest.fn(),
+      findActiveCardsByCity: jest.fn(),
     };
     service = new MasterService(
       cityRepository as unknown as CityRepository,
@@ -80,12 +80,12 @@ describe('MasterService', () => {
   });
 
   describe('getMapPoints', () => {
-    it('returns active masters of the city', async () => {
-      const masters = [{ id: 1 }] as Master[];
-      masterRepository.findActiveByCity.mockResolvedValue(masters);
+    it('returns active master cards of the city', async () => {
+      const masters = [card(1)];
+      masterRepository.findActiveCardsByCity.mockResolvedValue(masters);
 
       await expect(service.getMapPoints('vilnius')).resolves.toBe(masters);
-      expect(masterRepository.findActiveByCity).toHaveBeenCalledWith(1);
+      expect(masterRepository.findActiveCardsByCity).toHaveBeenCalledWith(1);
     });
 
     it('throws NotFoundException for an unknown city', async () => {

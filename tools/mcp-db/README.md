@@ -1,25 +1,27 @@
 # glow-db MCP server
 
-An MCP server that gives Claude Code read-only access to the `auth_db` and `user_db` databases, so it can check data across services while debugging.
+An MCP server that gives Claude Code read-only access to the `auth_db`, `user_db` and `masters_db` databases, so it can check data across services while debugging.
 
 ## Tools
 
 | Tool | What it does |
 |---|---|
 | `check_user_consistency` | Compares all users in `auth_db` and `user_db`. Returns users that exist in only one database, and users whose `email` or `name` differ between the two. |
+| `check_master_users` | Checks that every master in `masters_db` points to an existing user. Returns masters whose `user_uuid` is missing in `user_db`, in `auth_db`, or in both. |
 
 ## Setup
 
-1. Start the databases with `docker compose up -d` and make sure `apps/auth/.env` and `apps/user/.env` exist.
+1. Start the databases with `docker compose up -d` and make sure `apps/auth/.env`, `apps/user/.env` and `apps/masters/.env` exist.
 2. Install dependencies: `cd tools/mcp-db && npm install`.
-3. Create the read-only user in both databases. You only need to do this once per database volume:
+3. Create the read-only user in all three databases. You only need to do this once per database volume:
    ```
    docker compose exec -T postgres-auth psql -U dev -d auth_db -f - < tools/mcp-db/setup-readonly.sql
    docker compose exec -T postgres-user psql -U dev -d user_db -f - < tools/mcp-db/setup-readonly.sql
+   docker compose exec -T postgres-masters psql -U dev -d masters_db -f - < tools/mcp-db/setup-readonly.sql
    ```
 4. Restart Claude Code in the repo root and approve the `glow-db` server. `/mcp` shows its status.
 
-The server is registered in `.mcp.json` at the repo root. It takes the host, port and database from `DATABASE_URL` in `apps/auth/.env` and `apps/user/.env`. It replaces the credentials with `MCP_DB_USER` and `MCP_DB_PASSWORD` from `.mcp.json`, so there is no second copy of the addresses to keep in sync. If `MCP_DB_USER` or `MCP_DB_PASSWORD` is missing, the server refuses to start. To point it at a different database, set `AUTH_DB_URL` or `USER_DB_URL`. Either one overrides that database's URL completely, credentials included.
+The server is registered in `.mcp.json` at the repo root. It takes the host, port and database from `DATABASE_URL` in `apps/auth/.env`, `apps/user/.env` and `apps/masters/.env`. It replaces the credentials with `MCP_DB_USER` and `MCP_DB_PASSWORD` from `.mcp.json`, so there is no second copy of the addresses to keep in sync. If `MCP_DB_USER` or `MCP_DB_PASSWORD` is missing, the server refuses to start. To point it at a different database, set `AUTH_DB_URL`, `USER_DB_URL` or `MASTERS_DB_URL`. Each one overrides that database's URL completely, credentials included.
 
 ## Why a separate read-only user
 

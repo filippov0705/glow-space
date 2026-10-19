@@ -18,9 +18,6 @@ const categories = [
   { slug: 'massage', name: 'Massage', sortOrder: 6 },
 ];
 
-// Demo masters. Their userUuid values do not belong to real users.
-// Vilnius has rated and unrated masters, Riga only unrated ones,
-// so both branches of the top masters query can be checked.
 const masters = [
   {
     userUuid: '00000000-0000-4000-8000-000000000001',
@@ -120,6 +117,17 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['massage'],
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000010',
+    displayName: 'Sofia N.',
+    city: 'riga',
+    address: 'Barona iela 31, Riga',
+    lat: 56.9536,
+    lng: 24.1253,
+    rating: 4.7,
+    reviewsCount: 42,
+    categories: ['brows-and-lashes', 'nails'],
   },
 ];
 

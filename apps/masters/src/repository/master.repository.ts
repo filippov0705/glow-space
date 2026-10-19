@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MasterStatus } from '@glow-space/shared';
-import { Master, Prisma } from 'src/generated/prisma';
+import { Prisma } from 'src/generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
 
 // Data needed for a master card: categories in display order and the cover (first work).
@@ -52,9 +52,10 @@ class MasterRepository {
     });
   }
 
-  async findActiveByCity(cityId: number): Promise<Master[]> {
+  async findActiveCardsByCity(cityId: number): Promise<MasterCard[]> {
     return await this.prisma.master.findMany({
       where: { cityId, status: MasterStatus.ACTIVE },
+      ...masterCardArgs,
     });
   }
 }

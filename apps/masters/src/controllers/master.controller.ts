@@ -5,7 +5,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { MasterMapPointResponse, TopMasterResponse } from '@glow-space/shared';
+import { MasterCardResponse, MasterMapPointResponse } from '@glow-space/shared';
 import MasterService from '../services/master.service';
 import MasterResponder from '../responders/master.responder';
 import { CityQueryDTO } from 'src/dto/city-query.dto';
@@ -30,12 +30,10 @@ class MasterController {
   @UsePipes(queryValidationPipe)
   async getTop(
     @Query() query: TopMastersQueryDTO,
-  ): Promise<TopMasterResponse[]> {
+  ): Promise<MasterCardResponse[]> {
     const masters = await this.masterService.getTop(query.city, query.limit);
 
-    return masters.map((master) =>
-      this.masterResponder.topMasterResponse(master),
-    );
+    return masters.map((master) => this.masterResponder.cardResponse(master));
   }
 
   @Get('map')

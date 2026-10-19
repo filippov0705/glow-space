@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { City, Master } from 'src/generated/prisma';
+import { City } from 'src/generated/prisma';
 import CityRepository from '../repository/city.repository';
 import MasterRepository, { MasterCard } from '../repository/master.repository';
 
@@ -35,10 +35,10 @@ class MasterService {
     return [...rated, ...randomIds.flatMap((id) => unratedById.get(id) ?? [])];
   }
 
-  async getMapPoints(citySlug: string): Promise<Master[]> {
+  async getMapPoints(citySlug: string): Promise<MasterCard[]> {
     const city = await this.getCity(citySlug);
 
-    return await this.masterRepository.findActiveByCity(city.id);
+    return await this.masterRepository.findActiveCardsByCity(city.id);
   }
 
   private async getCity(citySlug: string): Promise<City> {

@@ -1,12 +1,9 @@
-import { Inter } from "next/font/google";
-import "../globals.css";
-import { CITY_COOKIE, DEFAULT_CITY, USER_COOKIE } from "../constants";
+import { USER_COOKIE } from "../constants";
 import { cookies } from "next/headers";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
 import { User } from "../types/user";
-import { getCityFromIpAction } from "./actions";
-
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
+import { resolveCurrentCity } from "./actions";
 
 export default async function MainLayout({
   children,
@@ -15,14 +12,13 @@ export default async function MainLayout({
   const raw = cookieStore.get(USER_COOKIE)?.value;
   const user = raw ? (JSON.parse(raw) as User) : null;
 
-  const cityCookie = cookieStore.get(CITY_COOKIE)?.value;
-
-  const city = cityCookie ?? (await getCityFromIpAction()) ?? DEFAULT_CITY;
+  const city = await resolveCurrentCity();
 
   return (
     <>
-      <Header user={user} city={city} />
-      {children}
+      <Header user={user} city={city.name} />
+      <div className="flex-grow">{children}</div>
+      <Footer />
     </>
   );
 }

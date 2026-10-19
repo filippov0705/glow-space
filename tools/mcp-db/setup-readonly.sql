@@ -1,5 +1,5 @@
 -- Read-only user for the glow-db MCP server.
--- Run in each database (auth_db and user_db) as the user that runs Prisma migrations (dev).
+-- Run in each database (auth_db, user_db and masters_db) as the user that runs Prisma migrations (dev).
 -- Safe to run more than once.
 
 DO $$

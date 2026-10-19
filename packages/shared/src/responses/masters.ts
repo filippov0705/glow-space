@@ -3,7 +3,7 @@ export type CategoryResponse = {
   name: string;
 };
 
-export type TopMasterResponse = {
+export type MasterCardResponse = {
   uuid: string;
   name: string;
   categories: CategoryResponse[];
@@ -12,8 +12,9 @@ export type TopMasterResponse = {
   reviewsCount: number;
 };
 
-export type MasterMapPointResponse = {
-  uuid: string;
+export type TopMasterResponse = MasterCardResponse;
+
+export type MasterMapPointResponse = MasterCardResponse & {
   lat: number;
   lng: number;
 };

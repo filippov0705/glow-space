@@ -1,7 +1,6 @@
 import MasterController from './master.controller';
 import MasterService from '../services/master.service';
 import MasterResponder from '../responders/master.responder';
-import { Master } from 'src/generated/prisma';
 
 describe('MasterController', () => {
   let masterService: { getTop: jest.Mock; getMapPoints: jest.Mock };
@@ -61,15 +60,35 @@ describe('MasterController', () => {
   });
 
   describe('getMapPoints', () => {
-    it('returns map points', async () => {
+    it('returns map points with card data', async () => {
       masterService.getMapPoints.mockResolvedValue([
-        { uuid: 'm-1', lat: 54.68, lng: 25.27 },
-      ] as Master[]);
+        {
+          uuid: 'm-1',
+          displayName: 'Anna K.',
+          rating: 4.9,
+          reviewsCount: 128,
+          lat: 54.68,
+          lng: 25.27,
+          categories: [{ category: { slug: 'nails', name: 'Nails' } }],
+          works: [{ imageUrl: 'https://img/1' }],
+        },
+      ] as unknown);
 
       const result = await controller.getMapPoints({ city: 'vilnius' });
 
       expect(masterService.getMapPoints).toHaveBeenCalledWith('vilnius');
-      expect(result).toEqual([{ uuid: 'm-1', lat: 54.68, lng: 25.27 }]);
+      expect(result).toEqual([
+        {
+          uuid: 'm-1',
+          name: 'Anna K.',
+          categories: [{ slug: 'nails', name: 'Nails' }],
+          coverUrl: 'https://img/1',
+          rating: 4.9,
+          reviewsCount: 128,
+          lat: 54.68,
+          lng: 25.27,
+        },
+      ]);
     });
   });
 });

@@ -10,6 +10,7 @@ export type {
 } from "./responses/user.js";
 export type {
   CategoryResponse,
+  MasterCardResponse,
   TopMasterResponse,
   MasterMapPointResponse,
 } from "./responses/masters.js";

@@ -78,10 +78,19 @@ Prisma 7 is configured through `prisma.config.ts`, which supplies the datasource
 - Don't wrap Prisma calls in repositories with try/catch. Let errors propagate (they become 500).
   If a case must return 4xx, check it explicitly in the service (e.g. look up the record and throw `NotFoundException`).
   - Repository methods return the bare model. Add `include`/relation `select` only in a method whose caller uses the related data, and don't add it to existing methods. If the related record is already loaded (e.g. looked up for validation), reuse it instead of joining.
-- `tools/mcp-db` reads `DATABASE_URL` from `apps/auth/.env` and `apps/user/.env`. If you rename that variable or move those files, update `tools/mcp-db/src/index.ts` too.
+- `tools/mcp-db` reads `DATABASE_URL` from `apps/auth/.env`, `apps/user/.env` and `apps/masters/.env`. If you rename that variable or move those files, update `tools/mcp-db/src/index.ts` too.
+- Before running a shell command that is not obvious, say in one sentence what it does and why.
+
+## Working style
+
+- Make small changes directly, without a plan or subagents. Small changes include UI tweaks, fixes in one or two files, and follow-up changes after a feature is done.
+- Keep to the scope of the request. If you find other problems along the way, list them in the final message and do not fix them without asking.
+- Don't rely on memory for how third-party services behave (API keys, limits, terms). Check it, for example with `curl`, before building on it.
+- When you style inside a third-party widget (Leaflet popups, etc.), check the library's CSS for rules that override yours.
 
 ## Definition of done
 
 - `npm run lint` passes in every app you changed. Run lint only in apps you changed
 - Unit tests pass, and new service or controller logic has a `*.spec.ts`.
 - If you changed `packages/shared`, rebuild it and check that dependent apps still compile.
+- If you changed UI in `apps/web`, open the page and compare it with the mockup. If you couldn't do that, say so in the final message.

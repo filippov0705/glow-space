@@ -1,0 +1,97 @@
+// Spacing comes from flex gap only: inside the map popup, margins on p and
+// colors on a are reset (see MapSection.module.scss).
+.mapCard {
+  display: flex;
+  gap: 10px;
+  // with the popup's 10px padding the whole popup is about 240px wide
+  width: 220px;
+  height: 64px;
+
+  &__photo {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    --master-cover-placeholder-size: 10px;
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0px;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0px;
+    // keeps the name and category clear of the popup's × button
+    padding-right: 20px;
+  }
+
+  &__name {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 16px;
+    color: #1a1a1a;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__category {
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 15px;
+    color: rgb(92, 90, 87);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  // Clips long review counts so they don't run under the "View profile"
+  // button. MasterRating's <p> is a flex container, so the ellipsis is inert
+  // and overflow just cuts off; the visually hidden label is clipped already.
+  &__rating {
+    overflow: hidden;
+    min-width: 0px;
+    line-height: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    --master-rating-size: 11px;
+  }
+}
+
+// (0,3,1) here would tie with the popup's `a { color: inherit }` reset, so
+// the extra class gives (0,4,1) and the white text wins regardless of load
+// order. The hover state is (0,5,1).
+.mapCard .mapCard__footer a.mapCard__link:any-link {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: #1a1a1a;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  color: white;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: #333333;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #d4537e;
+    outline-offset: 2px;
+  }
+}

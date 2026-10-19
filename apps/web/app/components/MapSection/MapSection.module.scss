@@ -1,0 +1,124 @@
+.mapSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: #1a1a1a;
+  }
+
+  &__frame {
+    position: relative;
+    // keeps Leaflet's internal z-indexes from overlapping the header
+    isolation: isolate;
+    height: 280px;
+    overflow: hidden;
+    border: 1px solid #e5e3df;
+    border-radius: 14px;
+    background: #efe7e0;
+  }
+
+  &__chip {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    // The chip sits outside the map, and Leaflet's map pane (z-index 400) is its
+    // own stacking context, so the chip cannot slot between markers and popups.
+    // It stays above the whole map pane. On open, popups are panned clear of it
+    // through autoPanPaddingTopLeft in MastersMap.
+    z-index: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: white;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12);
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a1a;
+    pointer-events: none;
+  }
+
+  &__map {
+    width: 100%;
+    height: 100%;
+
+    // Leaflet's `.leaflet-container` (0,1,0) sets Helvetica. The popup lives
+    // inside the map, so the page font is restored here (0,2,0) for it and
+    // the controls to inherit. Leaflet's 12px size stays for the controls.
+    &:global(.leaflet-container) {
+      font-family: inherit;
+    }
+  }
+
+  // Leaflet renders the popup markup itself, so its classes are restyled
+  // globally but only under this popup's class.
+  &__popup {
+    :global(.leaflet-popup-content-wrapper) {
+      padding: 10px;
+      border-radius: 14px;
+      background: white;
+      box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.14);
+    }
+
+    // Resets of Leaflet's popup content rules. Qualifying the popup wrapper
+    // gives (0,3,0) against `.leaflet-popup-content` (0,1,0), and (0,3,1)
+    // against `.leaflet-popup-content p` and `.leaflet-container a` (0,1,1).
+    // Card styles that must beat these resets need (0,3,2) or more.
+    &:global(.leaflet-popup) :global(.leaflet-popup-content) {
+      // Leaflet sets an inline width after measuring the content
+      width: auto !important;
+      margin: 0px;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+
+      p {
+        margin: 0px;
+      }
+
+      a {
+        color: inherit;
+      }
+    }
+
+    :global(.leaflet-popup-tip-container) {
+      display: none;
+    }
+
+    // Leaflet styles the button with `.leaflet-container a.leaflet-popup-close-button`
+    // (0,2,1) and (0,3,1) for :hover/:focus. Qualifying both the popup wrapper and
+    // the anchor gives (0,3,1) and (0,4,1), so these win regardless of load order.
+    &:global(.leaflet-popup) a:global(.leaflet-popup-close-button) {
+      top: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #f3f1ee;
+      // overrides Leaflet's `font: 16px/24px Tahoma, ...` shorthand
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1;
+      color: #5c5a57;
+
+      &:hover,
+      &:focus,
+      &:focus-visible {
+        background: #e5e3df;
+        color: #1a1a1a;
+      }
+    }
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #efe7e0;
+  }
+}

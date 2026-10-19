@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { MasterMapPointResponse, TopMasterResponse } from '@glow-space/shared';
-import { Master } from 'src/generated/prisma';
+import { MasterCardResponse, MasterMapPointResponse } from '@glow-space/shared';
 import { MasterCard } from '../repository/master.repository';
 
 @Injectable()
 class MasterResponder {
-  topMasterResponse(master: MasterCard): TopMasterResponse {
+  cardResponse(master: MasterCard): MasterCardResponse {
     return {
       uuid: master.uuid,
       name: master.displayName,
@@ -19,9 +18,9 @@ class MasterResponder {
     };
   }
 
-  mapPointResponse(master: Master): MasterMapPointResponse {
+  mapPointResponse(master: MasterCard): MasterMapPointResponse {
     return {
-      uuid: master.uuid,
+      ...this.cardResponse(master),
       lat: master.lat,
       lng: master.lng,
     };
