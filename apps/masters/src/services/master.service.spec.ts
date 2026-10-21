@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import MasterService from './master.service';
+import CityService from './city.service';
 import CityRepository from '../repository/city.repository';
 import MasterRepository, { MasterCard } from '../repository/master.repository';
 import { City } from 'src/generated/prisma';
@@ -26,7 +27,7 @@ describe('MasterService', () => {
       findActiveCardsByCity: jest.fn(),
     };
     service = new MasterService(
-      cityRepository as unknown as CityRepository,
+      new CityService(cityRepository as unknown as CityRepository),
       masterRepository as unknown as MasterRepository,
     );
   });

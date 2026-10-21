@@ -11,7 +11,9 @@ class MasterResponder {
       categories: master.categories.map(({ category }) => ({
         slug: category.slug,
         name: category.name,
+        imageUrl: category.imageUrl,
       })),
+      photoUrl: master.photoUrl,
       coverUrl: master.works[0]?.imageUrl ?? null,
       rating: master.rating,
       reviewsCount: master.reviewsCount,

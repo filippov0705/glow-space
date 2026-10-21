@@ -20,7 +20,7 @@ export default function MasterCover({
         <img
           className={styles.cover__image}
           src={coverUrl}
-          alt={`Work by ${name}`}
+          alt={name}
           loading="lazy"
           decoding="async"
         />

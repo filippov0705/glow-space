@@ -58,6 +58,12 @@ class MasterRepository {
       ...masterCardArgs,
     });
   }
+
+  async countActiveByCity(cityId: number): Promise<number> {
+    return await this.prisma.master.count({
+      where: { cityId, status: MasterStatus.ACTIVE },
+    });
+  }
 }
 
 export default MasterRepository;

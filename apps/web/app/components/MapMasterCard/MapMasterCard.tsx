@@ -15,7 +15,7 @@ export default function MapMasterCard({ master }: MapMasterCardProps) {
     <article className={styles.mapCard}>
       <MasterCover
         className={styles.mapCard__photo}
-        coverUrl={master.coverUrl}
+        coverUrl={master.photoUrl ?? master.coverUrl}
         name={master.name}
       />
 

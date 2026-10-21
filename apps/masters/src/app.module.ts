@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import CityRepository from './repository/city.repository';
 import CategoryRepository from './repository/category.repository';
 import MasterRepository from './repository/master.repository';
+import CityService from './services/city.service';
 import CategoryService from './services/category.service';
 import MasterService from './services/master.service';
 import CategoryController from './controllers/category.controller';
@@ -19,6 +20,7 @@ import MasterResponder from './responders/master.responder';
     CityRepository,
     CategoryRepository,
     MasterRepository,
+    CityService,
     CategoryService,
     MasterService,
     CategoryResponder,

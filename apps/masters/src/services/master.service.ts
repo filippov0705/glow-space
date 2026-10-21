@@ -1,19 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { City } from 'src/generated/prisma';
-import CityRepository from '../repository/city.repository';
+import { Injectable } from '@nestjs/common';
 import MasterRepository, { MasterCard } from '../repository/master.repository';
+import CityService from './city.service';
 
 @Injectable()
 class MasterService {
   constructor(
-    private readonly cityRepository: CityRepository,
+    private readonly cityService: CityService,
     private readonly masterRepository: MasterRepository,
   ) {}
 
   // Masters with a rating go first, best rated first.
   // Free places are filled with random masters that have no reviews yet.
   async getTop(citySlug: string, limit: number): Promise<MasterCard[]> {
-    const city = await this.getCity(citySlug);
+    const city = await this.cityService.getBySlug(citySlug);
 
     const rated = await this.masterRepository.findTopRatedCards(city.id, limit);
     if (rated.length === limit) {
@@ -36,18 +35,9 @@ class MasterService {
   }
 
   async getMapPoints(citySlug: string): Promise<MasterCard[]> {
-    const city = await this.getCity(citySlug);
+    const city = await this.cityService.getBySlug(citySlug);
 
     return await this.masterRepository.findActiveCardsByCity(city.id);
-  }
-
-  private async getCity(citySlug: string): Promise<City> {
-    const city = await this.cityRepository.findBySlug(citySlug);
-    if (!city) {
-      throw new NotFoundException('City not found');
-    }
-
-    return city;
   }
 }
 

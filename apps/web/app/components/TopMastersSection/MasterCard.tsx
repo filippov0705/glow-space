@@ -14,7 +14,7 @@ export default function MasterCard({ master }: MasterCardProps) {
     <article className={styles.card}>
       <MasterCover
         className={styles.card__photo}
-        coverUrl={master.coverUrl}
+        coverUrl={master.photoUrl ?? master.coverUrl}
         name={master.name}
       />
 

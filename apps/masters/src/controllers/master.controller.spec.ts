@@ -15,19 +15,23 @@ describe('MasterController', () => {
   });
 
   describe('getTop', () => {
-    it('returns master cards with categories and cover', async () => {
+    it('returns master cards with categories, photo and cover', async () => {
       masterService.getTop.mockResolvedValue([
         {
           uuid: 'm-1',
           displayName: 'Anna K.',
+          photoUrl: 'https://photo/1',
           rating: 4.9,
           reviewsCount: 128,
-          categories: [{ category: { slug: 'nails', name: 'Nails' } }],
+          categories: [
+            { category: { slug: 'nails', name: 'Nails', imageUrl: null } },
+          ],
           works: [{ imageUrl: 'https://img/1' }],
         },
         {
           uuid: 'm-2',
           displayName: 'Ieva M.',
+          photoUrl: null,
           rating: null,
           reviewsCount: 0,
           categories: [],
@@ -42,7 +46,8 @@ describe('MasterController', () => {
         {
           uuid: 'm-1',
           name: 'Anna K.',
-          categories: [{ slug: 'nails', name: 'Nails' }],
+          categories: [{ slug: 'nails', name: 'Nails', imageUrl: null }],
+          photoUrl: 'https://photo/1',
           coverUrl: 'https://img/1',
           rating: 4.9,
           reviewsCount: 128,
@@ -51,6 +56,7 @@ describe('MasterController', () => {
           uuid: 'm-2',
           name: 'Ieva M.',
           categories: [],
+          photoUrl: null,
           coverUrl: null,
           rating: null,
           reviewsCount: 0,
@@ -65,11 +71,14 @@ describe('MasterController', () => {
         {
           uuid: 'm-1',
           displayName: 'Anna K.',
+          photoUrl: 'https://photo/1',
           rating: 4.9,
           reviewsCount: 128,
           lat: 54.68,
           lng: 25.27,
-          categories: [{ category: { slug: 'nails', name: 'Nails' } }],
+          categories: [
+            { category: { slug: 'nails', name: 'Nails', imageUrl: null } },
+          ],
           works: [{ imageUrl: 'https://img/1' }],
         },
       ] as unknown);
@@ -81,7 +90,8 @@ describe('MasterController', () => {
         {
           uuid: 'm-1',
           name: 'Anna K.',
-          categories: [{ slug: 'nails', name: 'Nails' }],
+          categories: [{ slug: 'nails', name: 'Nails', imageUrl: null }],
+          photoUrl: 'https://photo/1',
           coverUrl: 'https://img/1',
           rating: 4.9,
           reviewsCount: 128,

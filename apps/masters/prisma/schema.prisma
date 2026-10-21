@@ -20,20 +20,41 @@ model City {
 }
 
 model Category {
-  id        Int              @id @default(autoincrement())
-  slug      String           @unique
-  name      String
-  sortOrder Int              @default(0) @map("sort_order")
-  masters   MasterCategory[]
+  id          Int              @id @default(autoincrement())
+  slug        String           @unique
+  name        String
+  description String?          @map("description")
+  imageUrl    String?          @map("image_url")
+  sortOrder   Int              @default(0) @map("sort_order")
+  masters     MasterCategory[]
+  tags        Tag[]
 
   @@map("categories")
+}
+
+model Tag {
+  id         Int    @id @default(autoincrement())
+  categoryId Int    @map("category_id")
+  slug       String
+  name       String
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  category Category    @relation(fields: [categoryId], references: [id])
+  masters  MasterTag[]
+
+  // Slugs repeat across categories (e.g. "haircut" in hair and barbering).
+  @@unique([categoryId, slug])
+  // Target of the composite foreign key from master_tags.
+  @@unique([id, categoryId])
+  @@map("tags")
 }
 
 model Master {
   id           Int    @id @default(autoincrement())
   uuid         String @unique @default(uuid())
   userUuid     String @unique @map("user_uuid")
-  displayName  String @map("display_name")
+  displayName  String  @map("display_name")
+  photoUrl     String? @map("photo_url")
   status       Int
   cityId       Int    @map("city_id")
   address      String
@@ -48,6 +69,7 @@ model Master {
   city       City             @relation(fields: [cityId], references: [id])
   categories MasterCategory[]
   works      Work[]
+  tags       MasterTag[]
 
   @@index([cityId, status, rating])
   @@map("masters")
@@ -60,9 +82,25 @@ model MasterCategory {
   master   Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id])
   works    Work[]
+  tags     MasterTag[]
 
   @@id([masterId, categoryId])
   @@map("master_categories")
+}
+
+model MasterTag {
+  masterId   Int @map("master_id")
+  categoryId Int @map("category_id")
+  tagId      Int @map("tag_id")
+
+  master         Master         @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  // The tag must belong to one of the master's categories.
+  masterCategory MasterCategory @relation(fields: [masterId, categoryId], references: [masterId, categoryId], onDelete: Cascade)
+  tag            Tag            @relation(fields: [tagId, categoryId], references: [id, categoryId])
+
+  @@id([masterId, tagId])
+  @@index([tagId])
+  @@map("master_tags")
 }
 
 model Work {

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import {
+  CategoriesOverviewResponse,
   CategoryResponse,
   MasterMapPointResponse,
   TopMasterResponse,
@@ -21,6 +22,21 @@ class MastersApi {
     } catch (error) {
       console.error(error);
       return [];
+    }
+  }
+
+  async getCategoriesOverview(
+    citySlug: string,
+  ): Promise<CategoriesOverviewResponse> {
+    try {
+      const response = await this.client.get<CategoriesOverviewResponse>(
+        "/categories/overview",
+        { params: { city: citySlug } },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return { totalMasters: 0, categories: [] };
     }
   }
 
