@@ -1,0 +1,43 @@
+.sort {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  &__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  &__select {
+    height: 32px;
+    padding: 0px 30px 0px 12px;
+    border: 1px solid rgb(217, 214, 210);
+    border-radius: 8px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    color: #1a1a1a;
+    cursor: pointer;
+    appearance: none;
+
+    &:focus-visible {
+      outline: none;
+      border-color: #d4537e;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    right: 10px;
+    width: 14px;
+    height: 14px;
+    color: rgb(92, 90, 87);
+    pointer-events: none;
+  }
+}

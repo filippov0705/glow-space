@@ -20,48 +20,48 @@ model City {
 }
 
 model Category {
-  id          Int              @id @default(autoincrement())
-  slug        String           @unique
-  name        String
-  description String?          @map("description")
-  imageUrl    String?          @map("image_url")
-  sortOrder   Int              @default(0) @map("sort_order")
-  masters     MasterCategory[]
-  tags        Tag[]
+  id            Int              @id @default(autoincrement())
+  slug          String           @unique
+  name          String
+  description   String?          @map("description")
+  imageUrl      String?          @map("image_url")
+  sortOrder     Int              @default(0) @map("sort_order")
+  masters       MasterCategory[]
+  subcategories Subcategory[]
 
   @@map("categories")
 }
 
-model Tag {
+model Subcategory {
   id         Int    @id @default(autoincrement())
   categoryId Int    @map("category_id")
   slug       String
   name       String
   sortOrder  Int    @default(0) @map("sort_order")
 
-  category Category    @relation(fields: [categoryId], references: [id])
-  masters  MasterTag[]
+  category  Category   @relation(fields: [categoryId], references: [id])
+  offerings Offering[]
 
   // Slugs repeat across categories (e.g. "haircut" in hair and barbering).
   @@unique([categoryId, slug])
-  // Target of the composite foreign key from master_tags.
+  // Target of the composite foreign key from offerings.
   @@unique([id, categoryId])
-  @@map("tags")
+  @@map("subcategories")
 }
 
 model Master {
-  id           Int    @id @default(autoincrement())
-  uuid         String @unique @default(uuid())
-  userUuid     String @unique @map("user_uuid")
+  id           Int     @id @default(autoincrement())
+  uuid         String  @unique @default(uuid())
+  userUuid     String  @unique @map("user_uuid")
   displayName  String  @map("display_name")
   photoUrl     String? @map("photo_url")
   status       Int
-  cityId       Int    @map("city_id")
+  cityId       Int     @map("city_id")
   address      String
   lat          Float
   lng          Float
   rating       Float?
-  reviewsCount Int    @default(0) @map("reviews_count")
+  reviewsCount Int     @default(0) @map("reviews_count")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -69,7 +69,7 @@ model Master {
   city       City             @relation(fields: [cityId], references: [id])
   categories MasterCategory[]
   works      Work[]
-  tags       MasterTag[]
+  offerings  Offering[]
 
   @@index([cityId, status, rating])
   @@map("masters")
@@ -79,28 +79,36 @@ model MasterCategory {
   masterId   Int @map("master_id")
   categoryId Int @map("category_id")
 
-  master   Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [categoryId], references: [id])
-  works    Work[]
-  tags     MasterTag[]
+  master    Master     @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  category  Category   @relation(fields: [categoryId], references: [id])
+  works     Work[]
+  offerings Offering[]
 
   @@id([masterId, categoryId])
   @@map("master_categories")
 }
 
-model MasterTag {
-  masterId   Int @map("master_id")
-  categoryId Int @map("category_id")
-  tagId      Int @map("tag_id")
+model Offering {
+  id            String   @id @default(uuid())
+  masterId      Int      @map("master_id")
+  categoryId    Int      @map("category_id")
+  subcategoryId Int      @map("subcategory_id")
+  name          String
+  price         Int // in cents
+  currency      String   @default("EUR")
+  durationMin   Int      @map("duration_min")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   master         Master         @relation(fields: [masterId], references: [id], onDelete: Cascade)
-  // The tag must belong to one of the master's categories.
+  // The subcategory must belong to one of the master's categories.
   masterCategory MasterCategory @relation(fields: [masterId, categoryId], references: [masterId, categoryId], onDelete: Cascade)
-  tag            Tag            @relation(fields: [tagId, categoryId], references: [id, categoryId])
+  subcategory    Subcategory    @relation(fields: [subcategoryId, categoryId], references: [id, categoryId])
 
-  @@id([masterId, tagId])
-  @@index([tagId])
-  @@map("master_tags")
+  @@index([masterId])
+  @@index([subcategoryId])
+  @@map("offerings")
 }
 
 model Work {

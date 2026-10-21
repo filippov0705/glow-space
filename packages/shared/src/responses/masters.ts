@@ -30,3 +30,30 @@ export type MasterMapPointResponse = MasterCardResponse & {
   lat: number;
   lng: number;
 };
+
+export type SubcategoryResponse = {
+  slug: string;
+  name: string;
+};
+
+export type CategoryPageResponse = {
+  category: CategoryResponse & { description: string | null };
+  subcategories: SubcategoryResponse[];
+};
+
+export type CategoryMasterCardResponse = MasterCardResponse & {
+  subcategories: SubcategoryResponse[];
+  minPrice: number; // in cents
+  currency: string; // ISO 4217 code
+};
+
+export type CategoryMastersResponse = {
+  total: number;
+  masters: CategoryMasterCardResponse[];
+};
+
+export type CityWithCountResponse = {
+  slug: string;
+  name: string;
+  mastersCount: number;
+};

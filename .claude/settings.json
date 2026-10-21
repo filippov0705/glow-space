@@ -5,7 +5,12 @@
       "Bash(grep *)",
       "Bash(sed -n *)",
       "Bash(cat *)",
-      "Bash(ls *)"
+      "Bash(ls *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint --prefix *)",
+      "Bash(npx eslint *)",
+      "Bash(npm test)",
+      "Bash(npm test --prefix *)"
     ]
   },
   "hooks": {

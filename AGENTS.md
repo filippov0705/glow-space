@@ -80,6 +80,9 @@ Prisma 7 is configured through `prisma.config.ts`, which supplies the datasource
   - Repository methods return the bare model. Add `include`/relation `select` only in a method whose caller uses the related data, and don't add it to existing methods. If the related record is already loaded (e.g. looked up for validation), reuse it instead of joining.
 - `tools/mcp-db` reads `DATABASE_URL` from `apps/auth/.env`, `apps/user/.env` and `apps/masters/.env`. If you rename that variable or move those files, update `tools/mcp-db/src/index.ts` too.
 - Before running a shell command that is not obvious, say in one sentence what it does and why.
+- Run shell commands one at a time: no `&&`, `;` or pipes, and no `cd` (use absolute paths or
+  `npm --prefix apps/<name>`). Chained commands don't match the permission allowlist and trigger a prompt.
+  To trim output, use the Read/Grep tools or the command's own flags instead of a pipe.
 
 ## Working style
 

@@ -1,0 +1,54 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e3df;
+  border-radius: 14px;
+  background: white;
+
+  &__photo {
+    height: 135px;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+  }
+
+  &__name {
+    margin: 0px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    overflow-wrap: anywhere;
+  }
+
+  &__subcategories {
+    margin: 0px;
+    font-size: 13px;
+    color: rgb(92, 90, 87);
+  }
+
+  // Pinned to the bottom so rating rows line up across a grid row
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 8px;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+
+  &__price {
+    margin: 0px;
+    font-size: 13px;
+    color: #1a1a1a;
+    white-space: nowrap;
+  }
+}

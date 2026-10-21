@@ -52,15 +52,22 @@
     }
   }
 
+  &__item {
+    display: flex;
+  }
+
   &__tile {
     display: flex;
+    flex: 1;
     align-items: flex-end;
     min-height: 84px;
     padding: 12px;
     border-radius: 14px;
     background: #f6e1e8;
+    text-decoration: none;
 
-    &:nth-child(even) {
+    // The tile is the link inside each <li>, so alternate by the <li>.
+    .categories__item:nth-child(even) > & {
       background: #efe7e0;
     }
 

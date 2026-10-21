@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 1rem 2rem;
   border-bottom: 1px solid #f0f0f0;
 
@@ -9,11 +10,33 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    min-width: 0;
   }
 
   &__right {
     display: flex;
     gap: 12px;
     align-items: center;
+    flex-shrink: 0;
+
+    button {
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 12px 16px;
+
+    &__left,
+    &__right {
+      gap: 8px;
+    }
+  }
+
+  // No room for both buttons on phones; keep the sign-in / user menu
+  @media (max-width: 480px) {
+    &__becomeMaster {
+      display: none;
+    }
   }
 }

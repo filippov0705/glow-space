@@ -3,6 +3,7 @@ export const REFRESH_TOKEN_COOKIE = "refresh_token";
 export const USER_COOKIE = "user";
 export const CITY_COOKIE = "city";
 export const DEFAULT_CITY = "vilnius";
+export const CITY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year, in seconds
 export const REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 export const ACCESS_COOKIE_MAX_AGE = 15 * 60;
 export const GEOLOCATION_URL = "https://ipwho.is";

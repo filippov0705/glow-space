@@ -17,7 +17,7 @@ const categories = [
     sortOrder: 1,
     imageUrl:
       'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Manicure',
       'Pedicure',
       'Gel polish',
@@ -33,7 +33,7 @@ const categories = [
     sortOrder: 2,
     imageUrl:
       'https://images.unsplash.com/photo-1564141696939-9eb6e957ccfc?q=80&w=1541&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Haircut',
       'Coloring',
       'Highlights',
@@ -49,7 +49,7 @@ const categories = [
     sortOrder: 3,
     imageUrl:
       'https://plus.unsplash.com/premium_photo-1718626727207-854154e67324?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Brow shaping',
       'Brow lamination',
       'Brow tinting',
@@ -65,7 +65,7 @@ const categories = [
     sortOrder: 4,
     imageUrl:
       'https://images.unsplash.com/photo-1709477542149-f4e0e21d590b?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Day makeup',
       'Evening makeup',
       'Bridal',
@@ -80,7 +80,7 @@ const categories = [
     sortOrder: 5,
     imageUrl:
       'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Facial cleaning',
       'Peeling',
       'Hydration',
@@ -96,7 +96,7 @@ const categories = [
     sortOrder: 6,
     imageUrl:
       'https://images.unsplash.com/photo-1745327883508-b6cd32e5dde5?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Relaxing',
       'Sports',
       'Face massage',
@@ -112,7 +112,13 @@ const categories = [
     sortOrder: 7,
     imageUrl:
       'https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: ['Haircut', 'Beard trim', 'Hot shave', 'Kids haircut', 'Styling'],
+    subcategories: [
+      'Haircut',
+      'Beard trim',
+      'Hot shave',
+      'Kids haircut',
+      'Styling',
+    ],
   },
   {
     slug: 'waxing',
@@ -121,7 +127,7 @@ const categories = [
     sortOrder: 8,
     imageUrl:
       'https://plus.unsplash.com/premium_photo-1664187387475-7e56d94d3691?q=80&w=708&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Legs',
       'Bikini',
       'Underarms',
@@ -137,7 +143,7 @@ const categories = [
     sortOrder: 9,
     imageUrl:
       'https://images.unsplash.com/photo-1597852075234-fd721ac361d3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Tattoo',
       'Cover-up',
       'Tattoo removal',
@@ -153,7 +159,7 @@ const categories = [
     sortOrder: 10,
     imageUrl:
       'https://images.unsplash.com/photo-1713085085470-fba013d67e65?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Botox and fillers',
       'Mesotherapy',
       'Biorevitalization',
@@ -168,7 +174,7 @@ const categories = [
     sortOrder: 11,
     imageUrl:
       'https://images.unsplash.com/photo-1777312377880-4f08acc48020?q=80&w=717&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: [
+    subcategories: [
       'Bridal makeup',
       'Bridal hair',
       'Trial session',
@@ -183,7 +189,13 @@ const categories = [
     sortOrder: 12,
     imageUrl:
       'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
-    tags: ['Body wrap', 'Scrub', 'Hot stone', 'Aromatherapy', 'Couples spa'],
+    subcategories: [
+      'Body wrap',
+      'Scrub',
+      'Hot stone',
+      'Aromatherapy',
+      'Couples spa',
+    ],
   },
 ];
 
@@ -198,7 +210,26 @@ const masters = [
     rating: 4.9,
     reviewsCount: 128,
     categories: ['nails'],
-    tags: ['manicure', 'gel-polish', 'nail-art'],
+    offerings: [
+      {
+        subcategory: 'manicure',
+        name: 'Classic manicure',
+        price: 2500,
+        durationMin: 45,
+      },
+      {
+        subcategory: 'gel-polish',
+        name: 'Manicure with gel polish',
+        price: 3500,
+        durationMin: 75,
+      },
+      {
+        subcategory: 'nail-art',
+        name: 'Nail art (up to 10 nails)',
+        price: 1500,
+        durationMin: 30,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1781450090585-1a511b7066d9?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -212,7 +243,26 @@ const masters = [
     rating: 4.8,
     reviewsCount: 94,
     categories: ['brows-and-lashes', 'makeup'],
-    tags: ['brow-lamination', 'lash-extensions', 'evening-makeup'],
+    offerings: [
+      {
+        subcategory: 'brow-lamination',
+        name: 'Brow lamination with tinting',
+        price: 4000,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'lash-extensions',
+        name: 'Classic lash extensions',
+        price: 5500,
+        durationMin: 120,
+      },
+      {
+        subcategory: 'evening-makeup',
+        name: 'Evening makeup',
+        price: 6000,
+        durationMin: 75,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1781925856343-c97d0d44f94c?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -226,7 +276,26 @@ const masters = [
     rating: 5.0,
     reviewsCount: 61,
     categories: ['hair'],
-    tags: ['haircut', 'coloring', 'highlights'],
+    offerings: [
+      {
+        subcategory: 'haircut',
+        name: "Women's haircut and blow-dry",
+        price: 4500,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'coloring',
+        name: 'Single-process color',
+        price: 7500,
+        durationMin: 120,
+      },
+      {
+        subcategory: 'highlights',
+        name: 'Balayage highlights',
+        price: 12000,
+        durationMin: 180,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -240,7 +309,26 @@ const masters = [
     rating: 4.9,
     reviewsCount: 87,
     categories: ['makeup'],
-    tags: ['day-makeup', 'bridal', 'photoshoot'],
+    offerings: [
+      {
+        subcategory: 'day-makeup',
+        name: 'Day makeup',
+        price: 4000,
+        durationMin: 45,
+      },
+      {
+        subcategory: 'bridal',
+        name: 'Bridal makeup',
+        price: 12000,
+        durationMin: 90,
+      },
+      {
+        subcategory: 'photoshoot',
+        name: 'Photoshoot makeup',
+        price: 6500,
+        durationMin: 60,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -254,7 +342,20 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['skincare'],
-    tags: ['facial-cleaning', 'peeling'],
+    offerings: [
+      {
+        subcategory: 'facial-cleaning',
+        name: 'Deep facial cleansing',
+        price: 6000,
+        durationMin: 75,
+      },
+      {
+        subcategory: 'peeling',
+        name: 'Chemical peel',
+        price: 7000,
+        durationMin: 45,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -268,7 +369,26 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['massage', 'skincare'],
-    tags: ['relaxing', 'back-and-neck', 'hydration'],
+    offerings: [
+      {
+        subcategory: 'relaxing',
+        name: 'Relaxing full-body massage',
+        price: 6000,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'back-and-neck',
+        name: 'Back and neck massage',
+        price: 3500,
+        durationMin: 30,
+      },
+      {
+        subcategory: 'hydration',
+        name: 'Hydrating facial',
+        price: 5500,
+        durationMin: 60,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1626383137804-ff908d2753a2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -282,7 +402,20 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['nails'],
-    tags: ['manicure', 'pedicure'],
+    offerings: [
+      {
+        subcategory: 'manicure',
+        name: 'Classic manicure',
+        price: 2000,
+        durationMin: 45,
+      },
+      {
+        subcategory: 'pedicure',
+        name: 'Classic pedicure',
+        price: 3500,
+        durationMin: 60,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1706629505300-168aa1604912?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -296,7 +429,20 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['hair', 'makeup'],
-    tags: ['styling', 'evening-makeup'],
+    offerings: [
+      {
+        subcategory: 'styling',
+        name: 'Evening hairstyle',
+        price: 5000,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'evening-makeup',
+        name: 'Evening makeup',
+        price: 5000,
+        durationMin: 60,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1614438865362-9137f7e3036e?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -310,7 +456,20 @@ const masters = [
     rating: null,
     reviewsCount: 0,
     categories: ['massage'],
-    tags: ['sports', 'lymphatic-drainage'],
+    offerings: [
+      {
+        subcategory: 'sports',
+        name: 'Sports massage',
+        price: 5500,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'lymphatic-drainage',
+        name: 'Lymphatic drainage massage',
+        price: 6500,
+        durationMin: 75,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1633681926053-9074b76e21a7?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -324,7 +483,26 @@ const masters = [
     rating: 4.7,
     reviewsCount: 42,
     categories: ['brows-and-lashes', 'nails'],
-    tags: ['lash-lift', 'brow-tinting', 'manicure'],
+    offerings: [
+      {
+        subcategory: 'lash-lift',
+        name: 'Lash lift with tinting',
+        price: 4500,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'brow-tinting',
+        name: 'Brow tinting and shaping',
+        price: 2500,
+        durationMin: 30,
+      },
+      {
+        subcategory: 'manicure',
+        name: 'Classic manicure',
+        price: 2200,
+        durationMin: 45,
+      },
+    ],
     photoUrl:
       'https://images.unsplash.com/photo-1658492055212-e1acbccfca5a?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
@@ -347,26 +525,29 @@ async function main() {
     });
   }
 
-  for (const { tags, ...categoryData } of categories) {
+  for (const { subcategories, ...categoryData } of categories) {
     const category = await prisma.category.upsert({
       where: { slug: categoryData.slug },
       create: categoryData,
       update: categoryData,
     });
 
-    for (const [index, name] of tags.entries()) {
-      const tagData = {
+    for (const [index, name] of subcategories.entries()) {
+      const subcategoryData = {
         categoryId: category.id,
         slug: slugify(name),
         name,
         sortOrder: index + 1,
       };
-      await prisma.tag.upsert({
+      await prisma.subcategory.upsert({
         where: {
-          categoryId_slug: { categoryId: category.id, slug: tagData.slug },
+          categoryId_slug: {
+            categoryId: category.id,
+            slug: subcategoryData.slug,
+          },
         },
-        create: tagData,
-        update: tagData,
+        create: subcategoryData,
+        update: subcategoryData,
       });
     }
   }
@@ -374,7 +555,7 @@ async function main() {
   for (const {
     city,
     categories: categorySlugs,
-    tags: tagSlugs,
+    offerings,
     ...data
   } of masters) {
     const { id: cityId } = await prisma.city.findUniqueOrThrow({
@@ -392,9 +573,35 @@ async function main() {
       where: { slug: { in: categorySlugs } },
     });
 
-    // Works and tags reference master_categories, so they are removed first.
+    // Subcategory slugs are resolved only within the master's own categories,
+    // before anything is deleted, so a wrong slug leaves the master untouched.
+    const masterSubcategories = await prisma.subcategory.findMany({
+      where: {
+        slug: { in: offerings.map((offering) => offering.subcategory) },
+        category: { slug: { in: categorySlugs } },
+      },
+    });
+    const offeringData = offerings.map(({ subcategory: slug, ...offering }) => {
+      const matches = masterSubcategories.filter(
+        (subcategory) => subcategory.slug === slug,
+      );
+      if (matches.length !== 1) {
+        throw new Error(
+          `Master ${data.displayName}: expected one subcategory "${slug}" in their categories, found ${matches.length}`,
+        );
+      }
+      const [subcategory] = matches;
+      return {
+        ...offering,
+        masterId: master.id,
+        categoryId: subcategory.categoryId,
+        subcategoryId: subcategory.id,
+      };
+    });
+
+    // Offerings and works reference master_categories, so they are removed first.
+    await prisma.offering.deleteMany({ where: { masterId: master.id } });
     await prisma.work.deleteMany({ where: { masterId: master.id } });
-    await prisma.masterTag.deleteMany({ where: { masterId: master.id } });
     await prisma.masterCategory.deleteMany({ where: { masterId: master.id } });
     await prisma.masterCategory.createMany({
       data: masterCategories.map((category) => ({
@@ -403,20 +610,7 @@ async function main() {
       })),
     });
 
-    // Tag slugs are looked up only within the master's own categories.
-    const masterTags = await prisma.tag.findMany({
-      where: {
-        slug: { in: tagSlugs },
-        categoryId: { in: masterCategories.map((category) => category.id) },
-      },
-    });
-    await prisma.masterTag.createMany({
-      data: masterTags.map((tag) => ({
-        masterId: master.id,
-        categoryId: tag.categoryId,
-        tagId: tag.id,
-      })),
-    });
+    await prisma.offering.createMany({ data: offeringData });
 
     await prisma.work.createMany({
       data: masterCategories.flatMap((category, categoryIndex) =>

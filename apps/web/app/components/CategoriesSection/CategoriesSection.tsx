@@ -25,23 +25,27 @@ export default function CategoriesSection({
       ) : (
         <ul className={styles.categories__grid}>
           {categories.map((category) => (
-            <li
-              key={category.slug}
-              className={
-                category.imageUrl
-                  ? `${styles.categories__tile} ${styles["categories__tile--image"]}`
-                  : styles.categories__tile
-              }
-            >
-              {category.imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className={styles.categories__image}
-                  src={category.imageUrl}
-                  alt=""
-                />
-              )}
-              <span className={styles.categories__name}>{category.name}</span>
+            <li key={category.slug} className={styles.categories__item}>
+              <Link
+                href={`/categories/${category.slug}`}
+                className={
+                  category.imageUrl
+                    ? `${styles.categories__tile} ${styles["categories__tile--image"]}`
+                    : styles.categories__tile
+                }
+              >
+                {category.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className={styles.categories__image}
+                    src={category.imageUrl}
+                    alt=""
+                  />
+                )}
+                <span className={styles.categories__name}>
+                  {category.name}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>

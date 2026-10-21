@@ -21,7 +21,11 @@ export default function Header({ user, city }: HeaderProps) {
         <CityButton city={city} onClick={() => {}} />
       </div>
       <div className={styles.header__right}>
-        <Button variant="primary" onClick={() => {}}>
+        <Button
+          variant="primary"
+          onClick={() => {}}
+          className={styles.header__becomeMaster}
+        >
           Become a Master
         </Button>
         {user ? (

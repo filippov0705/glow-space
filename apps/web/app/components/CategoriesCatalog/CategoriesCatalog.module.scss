@@ -97,9 +97,15 @@
     }
   }
 
+  &__item {
+    display: flex;
+  }
+
   &__tile {
     position: relative;
     display: flex;
+    flex: 1;
+    text-decoration: none;
     flex-direction: column;
     justify-content: flex-end;
     min-height: 132px;
