@@ -1,4 +1,7 @@
 .header {
+  // Read by MobileMenu (rendered inside the header) to sit right under it
+  --mobile-header-height: 61px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -6,6 +9,7 @@
   padding: 1rem 2rem;
   border-bottom: 1px solid #f0f0f0;
 
+  // The left group shrinks (city name is truncated in CityButton)
   &__left {
     display: flex;
     align-items: center;
@@ -24,8 +28,53 @@
     }
   }
 
-  @media (max-width: 640px) {
+  // Wrapper only to hide the dropdown on mobile, no box of its own
+  &__userMenu {
+    display: contents;
+  }
+
+  // Same look as the UserMenu avatar
+  &__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #f6e3ea;
+    color: #8a2b50;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  &__burger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    background: transparent;
+    color: #1a1a1a;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f4;
+    }
+  }
+
+  @media (max-width: 1280px) {
+    padding: 1rem 1.5rem;
+  }
+
+  @media (max-width: 768px) {
     padding: 12px 16px;
+    gap: 8px;
 
     &__left,
     &__right {
@@ -33,9 +82,28 @@
     }
   }
 
-  // No room for both buttons on phones; keep the sign-in / user menu
   @media (max-width: 480px) {
-    &__becomeMaster {
+    // 12px + 36px + 12px + 1px border, kept in sync with --mobile-header-height
+    height: var(--mobile-header-height);
+    // Stays on top while scrolling, so the fixed menu below it never leaves a gap
+    position: sticky;
+    top: 0;
+    // Creates a stacking context for MobileMenu and the UserMenu dropdown inside it,
+    // so this sets the page-level layer for both overlays
+    z-index: 45;
+    background: var(--background);
+
+    &__becomeMaster,
+    &__signIn,
+    &__userMenu {
+      display: none;
+    }
+  }
+
+  @media (min-width: 481px) {
+    &__logIn,
+    &__avatar,
+    &__burger {
       display: none;
     }
   }

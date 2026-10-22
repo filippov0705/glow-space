@@ -3,6 +3,8 @@
   align-items: center;
   color: #1a1a1a;
   text-decoration: none;
+  flex-shrink: 0;
+  white-space: nowrap;
 
   &__accent {
     color: #d4537e;

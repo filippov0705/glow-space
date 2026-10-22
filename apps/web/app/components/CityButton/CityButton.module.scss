@@ -9,6 +9,12 @@
   color: #1a1a1a;
   font-size: 13px;
   cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+
+  svg {
+    flex-shrink: 0;
+  }
 
   &:hover {
     background: #f9f9f9;
@@ -22,6 +28,10 @@
   &__city {
     font-weight: 400;
     color: #1a1a1a;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__arrow {
