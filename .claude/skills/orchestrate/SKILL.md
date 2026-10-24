@@ -7,7 +7,8 @@ description: Run a multi-step feature through executor and code-reviewer subagen
 
 You coordinate. You do not write code and do not read full diffs yourself.
 
-1. **Plan.** Explore only as much as needed, then write a plan to `docs/plans/<feature>.md`:
+0. **Clarify.** Explore only as much as needed, then describe the proposed approach in words in the chat and ask every open question. Do not write any file yet and do not fill gaps with your own defaults. Repeat until the user has answered everything and agrees with the approach. If the user's message asks a question, answer it before moving on.
+1. **Plan.** Only after Clarify is done, write a plan to `docs/plans/<feature>.md`:
    numbered steps, each small enough for one executor run, plus key decisions.
    Show the plan to the user and wait for approval.
 2. **Execute.** For each step, call the `executor` subagent with the plan path and step number.

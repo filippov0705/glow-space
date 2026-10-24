@@ -71,6 +71,11 @@ model Master {
   works      Work[]
   offerings  Offering[]
 
+  workingHours       WorkingHours[]
+  scheduleExceptions ScheduleException[]
+  bookings           Booking[]
+  reviews            Review[]
+
   @@index([cityId, status, rating])
   @@map("masters")
 }
@@ -105,6 +110,7 @@ model Offering {
   // The subcategory must belong to one of the master's categories.
   masterCategory MasterCategory @relation(fields: [masterId, categoryId], references: [masterId, categoryId], onDelete: Cascade)
   subcategory    Subcategory    @relation(fields: [subcategoryId, categoryId], references: [id, categoryId])
+  bookings       Booking[]
 
   @@index([masterId])
   @@index([subcategoryId])
@@ -137,4 +143,93 @@ model SearchSuggestion {
 
   @@index([locale, isActive])
   @@map("search_suggestions")
+}
+
+// All schedule times are the master's local wall-clock time; there is no timezone column.
+
+// Weekly working intervals. Several rows per weekday allow breaks.
+model WorkingHours {
+  id        Int    @id @default(autoincrement())
+  masterId  Int    @map("master_id")
+  weekday   Int // ISO: 1 = Monday ... 7 = Sunday
+  startTime String @map("start_time") // HH:MM
+  endTime   String @map("end_time") // HH:MM, after start_time (no crossing midnight)
+
+  master Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@index([masterId, weekday])
+  @@map("working_hours")
+}
+
+// Overrides the weekly schedule for one date: a day off or a single special interval.
+model ScheduleException {
+  id        Int      @id @default(autoincrement())
+  masterId  Int      @map("master_id")
+  date      DateTime @db.Date
+  isDayOff  Boolean  @map("is_day_off")
+  startTime String?  @map("start_time") // HH:MM, null when is_day_off
+  endTime   String?  @map("end_time") // HH:MM, null when is_day_off
+
+  master Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([masterId, date])
+  @@map("schedule_exceptions")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  masterId       Int           @map("master_id")
+  offeringId     String        @map("offering_id")
+  clientUserUuid String        @map("client_user_uuid")
+  startsAt       DateTime      @map("starts_at") @db.Timestamp(3)
+  endsAt         DateTime      @map("ends_at") @db.Timestamp(3)
+  status         BookingStatus @default(CONFIRMED)
+  // Snapshot of the offering at booking time.
+  offeringName   String        @map("offering_name")
+  price          Int // in cents
+  currency       String
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  master   Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  // Restrict keeps booking history when someone tries to delete an offering.
+  offering Offering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+
+  // Overlapping PENDING/CONFIRMED bookings of one master are rejected by an
+  // EXCLUDE constraint added by hand in the migration.
+  @@index([clientUserUuid])
+  @@map("bookings")
+}
+
+// One review per client per master. No link to bookings: they may be purged.
+model Review {
+  id             String    @id @default(uuid())
+  masterId       Int       @map("master_id")
+  clientUserUuid String    @map("client_user_uuid")
+  // Snapshots copied at creation; author_name is updated when the user renames.
+  authorName     String    @map("author_name")
+  offeringName   String    @map("offering_name")
+  rating         Int // 1..5
+  // Null for star-only reviews; never an empty string.
+  text           String?
+  // Master's reply: both null or both set, and only when text is not null.
+  replyText      String?   @map("reply_text")
+  repliedAt      DateTime? @map("replied_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  master Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  // CHECKs and the partial index (master_id, created_at) WHERE text IS NOT NULL
+  // are added by hand in the migration.
+  @@unique([masterId, clientUserUuid])
+  @@index([clientUserUuid])
+  @@map("reviews")
 }

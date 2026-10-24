@@ -814,6 +814,106 @@ const searchSuggestions = [
 
 const WORKS_PER_CATEGORY = 2;
 
+type Interval = { startTime: string; endTime: string };
+
+const WEEKDAYS_WITH_LUNCH = [1, 2, 3, 4, 5];
+const LUNCH_SPLIT: Interval[] = [
+  { startTime: '10:00', endTime: '14:00' },
+  { startTime: '15:00', endTime: '19:00' },
+];
+const WEEKDAYS_NO_BREAK = [2, 3, 4, 5, 6];
+const NO_BREAK: Interval[] = [{ startTime: '09:00', endTime: '18:00' }];
+const SUNDAY = 7;
+const SUNDAY_HOURS: Interval = { startTime: '11:00', endTime: '16:00' };
+
+// Patterns are picked from the master's position so every run seeds the same schedule.
+const weeklySchedule = (index: number) => {
+  const noBreak = index % 3 === 1;
+  const worksSunday = index % 4 === 3;
+  const weekdays = noBreak ? WEEKDAYS_NO_BREAK : WEEKDAYS_WITH_LUNCH;
+  const intervals = noBreak ? NO_BREAK : LUNCH_SPLIT;
+
+  const rows = weekdays.flatMap((weekday) =>
+    intervals.map((interval) => ({ weekday, ...interval })),
+  );
+  if (worksSunday) {
+    rows.push({ weekday: SUNDAY, ...SUNDAY_HOURS });
+  }
+  return rows;
+};
+
+// Exceptions are keyed by master position. `afterDays` is the minimum offset from
+// the seed run date; the date is moved forward to the first day that fits the kind.
+type ExceptionSeed =
+  | { kind: 'dayOff'; afterDays: number }
+  | { kind: 'shortDay'; afterDays: number }
+  | { kind: 'extraDay'; afterDays: number; interval: Interval };
+
+const scheduleExceptions: Record<number, ExceptionSeed[]> = {
+  0: [
+    { kind: 'dayOff', afterDays: 3 },
+    { kind: 'shortDay', afterDays: 8 },
+  ],
+  1: [{ kind: 'shortDay', afterDays: 2 }],
+  2: [
+    {
+      kind: 'extraDay',
+      afterDays: 1,
+      interval: { startTime: '11:00', endTime: '17:00' },
+    },
+  ],
+  5: [{ kind: 'dayOff', afterDays: 5 }],
+  7: [
+    {
+      kind: 'extraDay',
+      afterDays: 4,
+      interval: { startTime: '10:00', endTime: '15:00' },
+    },
+  ],
+};
+
+const SHORT_DAY: Interval = { startTime: '10:00', endTime: '14:00' };
+
+// @db.Date columns are stored as UTC midnight of the calendar date.
+const isoWeekday = (date: Date) => date.getUTCDay() || 7;
+
+const dateAfter = (afterDays: number, fits: (weekday: number) => boolean) => {
+  const now = new Date();
+  for (let offset = afterDays; offset < afterDays + 7; offset++) {
+    const date = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + offset),
+    );
+    if (fits(isoWeekday(date))) {
+      return date;
+    }
+  }
+  throw new Error(`No fitting date within a week after ${afterDays} days`);
+};
+
+const exceptionData = (
+  masterId: number,
+  workingWeekdays: Set<number>,
+  exception: ExceptionSeed,
+) => {
+  if (exception.kind === 'extraDay') {
+    return {
+      masterId,
+      date: dateAfter(
+        exception.afterDays,
+        (weekday) => !workingWeekdays.has(weekday),
+      ),
+      isDayOff: false,
+      ...exception.interval,
+    };
+  }
+  const date = dateAfter(exception.afterDays, (weekday) =>
+    workingWeekdays.has(weekday),
+  );
+  return exception.kind === 'dayOff'
+    ? { masterId, date, isDayOff: true, startTime: null, endTime: null }
+    : { masterId, date, isDayOff: false, ...SHORT_DAY };
+};
+
 const slugify = (name: string) =>
   name
     .toLowerCase()
@@ -856,12 +956,10 @@ async function main() {
     }
   }
 
-  for (const {
-    city,
-    categories: categorySlugs,
-    offerings,
-    ...data
-  } of masters) {
+  for (const [
+    masterIndex,
+    { city, categories: categorySlugs, offerings, ...data },
+  ] of masters.entries()) {
     const { id: cityId } = await prisma.city.findUniqueOrThrow({
       where: { slug: city },
     });
@@ -924,6 +1022,24 @@ async function main() {
           imageUrl: `https://placehold.co/600x400?text=${encodeURIComponent(category.name)}`,
           sortOrder: categoryIndex * WORKS_PER_CATEGORY + workIndex,
         })),
+      ),
+    });
+
+    const workingHours = weeklySchedule(masterIndex);
+    const workingWeekdays = new Set(workingHours.map((row) => row.weekday));
+
+    await prisma.workingHours.deleteMany({ where: { masterId: master.id } });
+    await prisma.workingHours.createMany({
+      data: workingHours.map((row) => ({ ...row, masterId: master.id })),
+    });
+
+    // Exception dates depend on the run date, so old rows are replaced, not upserted.
+    await prisma.scheduleException.deleteMany({
+      where: { masterId: master.id },
+    });
+    await prisma.scheduleException.createMany({
+      data: (scheduleExceptions[masterIndex] ?? []).map((exception) =>
+        exceptionData(master.id, workingWeekdays, exception),
       ),
     });
   }
