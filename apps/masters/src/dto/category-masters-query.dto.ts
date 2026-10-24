@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -8,33 +7,23 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { MASTER_SORTS } from '@glow-space/shared';
-import type { MasterSort } from '@glow-space/shared';
-import { CityQueryDTO } from './city-query.dto';
+import {
+  MASTERS_PAGE_MAX_LIMIT,
+  MastersPageQueryDTO,
+} from './masters-page-query.dto';
 
 export const CATEGORY_MASTERS_DEFAULT_LIMIT = 8;
-export const CATEGORY_MASTERS_MAX_LIMIT = 24;
 
-export class CategoryMastersQueryDTO extends CityQueryDTO {
+export class CategoryMastersQueryDTO extends MastersPageQueryDTO {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   sub?: string;
 
   @IsOptional()
-  @IsIn(MASTER_SORTS)
-  sort: MasterSort = 'top_rated';
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(0)
-  offset: number = 0;
-
-  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(CATEGORY_MASTERS_MAX_LIMIT)
+  @Max(MASTERS_PAGE_MAX_LIMIT)
   limit: number = CATEGORY_MASTERS_DEFAULT_LIMIT;
 }

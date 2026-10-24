@@ -506,6 +506,310 @@ const masters = [
     photoUrl:
       'https://images.unsplash.com/photo-1658492055212-e1acbccfca5a?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
   },
+  // Nail masters in Vilnius, so the AI search mockup query ("gel manicure
+  // under €35") has a Best match and a grid. Olga T. and Viktorija S. are over
+  // that budget; Milda V. has no reviews yet. Photos reuse the ones above.
+  {
+    userUuid: '00000000-0000-4000-8000-000000000011',
+    displayName: 'Daria M.',
+    city: 'vilnius',
+    address: 'Vokiečių g. 4, Vilnius',
+    lat: 54.6805,
+    lng: 25.2853,
+    rating: 4.9,
+    reviewsCount: 203,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'manicure',
+        name: 'Classic manicure',
+        price: 2200,
+        durationMin: 45,
+      },
+      {
+        subcategory: 'gel-polish',
+        name: 'Manicure with gel polish',
+        price: 2500,
+        durationMin: 70,
+      },
+      {
+        subcategory: 'nail-art',
+        name: 'Glitter and French design',
+        price: 1000,
+        durationMin: 20,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000012',
+    displayName: 'Olga T.',
+    city: 'vilnius',
+    address: 'Konstitucijos pr. 7, Vilnius',
+    lat: 54.6961,
+    lng: 25.2772,
+    rating: 4.8,
+    reviewsCount: 97,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Gel polish with care',
+        price: 4500,
+        durationMin: 90,
+      },
+      {
+        subcategory: 'extensions',
+        name: 'Gel nail extensions',
+        price: 6000,
+        durationMin: 150,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000013',
+    displayName: 'Sofia L.',
+    city: 'vilnius',
+    address: 'Didžioji g. 18, Vilnius',
+    lat: 54.6788,
+    lng: 25.2878,
+    rating: 4.8,
+    reviewsCount: 76,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Manicure with gel polish',
+        price: 2800,
+        durationMin: 75,
+      },
+      {
+        subcategory: 'pedicure',
+        name: 'Classic pedicure',
+        price: 3500,
+        durationMin: 60,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000014',
+    displayName: 'Katya R.',
+    city: 'vilnius',
+    address: 'Savanorių pr. 16, Vilnius',
+    lat: 54.6812,
+    lng: 25.2634,
+    rating: 4.7,
+    reviewsCount: 151,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Gel polish, one colour',
+        price: 3200,
+        durationMin: 60,
+      },
+      {
+        subcategory: 'nail-repair',
+        name: 'Nail repair, per nail',
+        price: 500,
+        durationMin: 15,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1626383137804-ff908d2753a2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000015',
+    displayName: 'Rasa J.',
+    city: 'vilnius',
+    address: 'Užupio g. 10, Vilnius',
+    lat: 54.6814,
+    lng: 25.2971,
+    rating: 4.6,
+    reviewsCount: 58,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'manicure',
+        name: 'Classic manicure',
+        price: 2000,
+        durationMin: 40,
+      },
+      {
+        subcategory: 'gel-polish',
+        name: 'Manicure with gel polish',
+        price: 3000,
+        durationMin: 70,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1706629505300-168aa1604912?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000016',
+    displayName: 'Eglė P.',
+    city: 'vilnius',
+    address: 'Žirmūnų g. 64, Vilnius',
+    lat: 54.7046,
+    lng: 25.2982,
+    rating: 4.5,
+    reviewsCount: 33,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Gel polish with nail art',
+        price: 3300,
+        durationMin: 80,
+      },
+      {
+        subcategory: 'pedicure',
+        name: 'Pedicure with gel polish',
+        price: 4200,
+        durationMin: 90,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1614438865362-9137f7e3036e?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000017',
+    displayName: 'Milda V.',
+    city: 'vilnius',
+    address: 'Kalvarijų g. 35, Vilnius',
+    lat: 54.6995,
+    lng: 25.2858,
+    rating: null,
+    reviewsCount: 0,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Manicure with gel polish',
+        price: 2700,
+        durationMin: 75,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1633681926053-9074b76e21a7?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+  {
+    userUuid: '00000000-0000-4000-8000-000000000018',
+    displayName: 'Viktorija S.',
+    city: 'vilnius',
+    address: 'Vilniaus g. 31, Vilnius',
+    lat: 54.6862,
+    lng: 25.2801,
+    rating: 4.9,
+    reviewsCount: 64,
+    categories: ['nails'],
+    offerings: [
+      {
+        subcategory: 'gel-polish',
+        name: 'Premium gel manicure',
+        price: 4000,
+        durationMin: 90,
+      },
+      {
+        subcategory: 'nail-art',
+        name: 'Hand-painted nail art',
+        price: 2000,
+        durationMin: 45,
+      },
+    ],
+    photoUrl:
+      'https://images.unsplash.com/photo-1781450090585-1a511b7066d9?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+  },
+];
+
+// Template chips under the home page search input. Vilnius rows are
+// interleaved with the global ones by sortOrder.
+const searchSuggestions = [
+  {
+    id: '10000000-0000-4000-8000-000000000001',
+    text: 'Gel manicure under €30',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000002',
+    text: 'Manicure in Old Town tomorrow morning',
+    locale: 'en',
+    citySlug: 'vilnius',
+    sortOrder: 15,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000003',
+    text: 'Haircut and color this weekend',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000004',
+    text: 'Brow lamination near the center',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 30,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000005',
+    text: 'Haircut near Gediminas Avenue after 6 pm',
+    locale: 'en',
+    citySlug: 'vilnius',
+    sortOrder: 35,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000006',
+    text: 'Relaxing massage after work',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 40,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000007',
+    text: 'Lash lift with a top-rated master',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 50,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000008',
+    text: 'Deep facial cleansing',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 60,
+    isActive: true,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000009',
+    text: 'Hot shave and beard trim',
+    locale: 'en',
+    citySlug: null,
+    sortOrder: 5,
+    isActive: false,
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000010',
+    text: 'Маникюр с гель-лаком до €30',
+    locale: 'ru',
+    citySlug: null,
+    sortOrder: 10,
+    isActive: true,
+  },
 ];
 
 const WORKS_PER_CATEGORY = 2;
@@ -621,6 +925,14 @@ async function main() {
           sortOrder: categoryIndex * WORKS_PER_CATEGORY + workIndex,
         })),
       ),
+    });
+  }
+
+  for (const suggestion of searchSuggestions) {
+    await prisma.searchSuggestion.upsert({
+      where: { id: suggestion.id },
+      create: suggestion,
+      update: suggestion,
     });
   }
 }

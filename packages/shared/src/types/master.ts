@@ -11,6 +11,7 @@ export const MASTER_SORTS = [
   "price_asc",
   "price_desc",
   "newest",
+  "nearest",
 ] as const;
 
 export type MasterSort = (typeof MASTER_SORTS)[number];

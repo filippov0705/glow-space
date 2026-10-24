@@ -12,7 +12,7 @@ export default function CategoriesSection({
   return (
     <section className={styles.categories}>
       <div className={styles.categories__header}>
-        <h2 className={styles.categories__title}>Categories</h2>
+        <h2 className={styles.categories__title}>Or choose a category</h2>
         <Link href="/categories" className={styles.categories__link}>
           See all
         </Link>

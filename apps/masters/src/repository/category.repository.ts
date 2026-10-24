@@ -55,6 +55,13 @@ class CategoryRepository {
     });
   }
 
+  // Ordered by category sortOrder, then subcategory sortOrder.
+  async findAllSubcategories(): Promise<Subcategory[]> {
+    return await this.prisma.subcategory.findMany({
+      orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }],
+    });
+  }
+
   async findSubcategoryBySlug(
     categoryId: number,
     slug: string,

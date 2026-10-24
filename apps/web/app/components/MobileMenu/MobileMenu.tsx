@@ -10,12 +10,10 @@ import {
   SlidersHorizontal,
   User,
 } from "lucide-react";
+import { MOBILE_QUERY } from "@/app/constants";
 import Button from "../Button/Button";
 import { logoutAction } from "../UserMenu/actions";
 import styles from "./MobileMenu.module.scss";
-
-// Keep in sync with the 480px breakpoint in Header.module.scss
-const MOBILE_QUERY = "(max-width: 480px)";
 
 type MobileMenuProps = {
   id: string;
@@ -101,10 +99,14 @@ export default function MobileMenu({
         Categories
         <ChevronRight size={18} className={styles.mobileMenu__chevron} />
       </Link>
-      <button type="button" className={styles.mobileMenu__row}>
+      <Link
+        href="/masters"
+        className={styles.mobileMenu__row}
+        onClick={onClose}
+      >
         Top masters
         <ChevronRight size={18} className={styles.mobileMenu__chevron} />
-      </button>
+      </Link>
       <button type="button" className={styles.mobileMenu__row}>
         Become a master
         <ChevronRight size={18} className={styles.mobileMenu__chevron} />

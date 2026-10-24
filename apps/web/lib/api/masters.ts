@@ -1,21 +1,38 @@
 import axios, { AxiosInstance, isAxiosError } from "axios";
 import {
   CategoriesOverviewResponse,
-  CategoryMastersResponse,
   CategoryPageResponse,
   CategoryResponse,
   CityWithCountResponse,
   MasterMapPointResponse,
   MasterSort,
+  MastersListResponse,
+  SearchParseResponse,
+  SearchSuggestionResponse,
+  SuggestionLocale,
   TopMasterResponse,
 } from "@glow-space/shared";
 
-export type CategoryMastersParams = {
+type MastersPageParams = {
   city: string;
-  sub?: string;
   sort?: MasterSort;
   offset?: number;
   limit?: number;
+  // Origin for the nearest sort; send both or neither
+  lat?: number;
+  lng?: number;
+};
+
+export type CategoryMastersParams = MastersPageParams & {
+  sub?: string;
+};
+
+export type MastersListParams = MastersPageParams & {
+  category?: string;
+  // Subcategory slug; requires category
+  subcategory?: string;
+  // In cents
+  priceMax?: number;
 };
 
 class MastersApi {
@@ -75,12 +92,47 @@ class MastersApi {
   async getCategoryMasters(
     categorySlug: string,
     params: CategoryMastersParams,
-  ): Promise<CategoryMastersResponse> {
-    const response = await this.client.get<CategoryMastersResponse>(
+  ): Promise<MastersListResponse> {
+    const response = await this.client.get<MastersListResponse>(
       `/categories/${encodeURIComponent(categorySlug)}/masters`,
       { params },
     );
     return response.data;
+  }
+
+  // All masters in a city, optionally in one category. Errors propagate
+  // (including 404 for an unknown category) for the same reason as above.
+  async getMasters(params: MastersListParams): Promise<MastersListResponse> {
+    const response = await this.client.get<MastersListResponse>("/masters", {
+      params,
+    });
+    return response.data;
+  }
+
+  // Turns free text into filters. Errors propagate so the search page
+  // shows its error boundary instead of an empty result.
+  async parseSearch(q: string, citySlug: string): Promise<SearchParseResponse> {
+    const response = await this.client.get<SearchParseResponse>(
+      "/search/parse",
+      { params: { q, city: citySlug } },
+    );
+    return response.data;
+  }
+
+  async getSearchSuggestions(
+    citySlug: string,
+    locale: SuggestionLocale = "en",
+  ): Promise<SearchSuggestionResponse[]> {
+    try {
+      const response = await this.client.get<SearchSuggestionResponse[]>(
+        "/search/suggestions",
+        { params: { locale, city: citySlug } },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   }
 
   async getCategoryCities(

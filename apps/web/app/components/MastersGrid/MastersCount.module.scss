@@ -1,0 +1,11 @@
+.count {
+  display: none;
+  margin: 0px;
+  font-size: 13px;
+  color: rgb(92, 90, 87);
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    display: block;
+  }
+}

@@ -41,15 +41,18 @@ export type CategoryPageResponse = {
   subcategories: SubcategoryResponse[];
 };
 
-export type CategoryMasterCardResponse = MasterCardResponse & {
+// A master in a paged list: GET /masters and GET /categories/:slug/masters
+export type MasterListCardResponse = MasterCardResponse & {
+  // Subcategories of the master's active offerings: only the requested
+  // category's ones when the list is filtered by category, otherwise all
   subcategories: SubcategoryResponse[];
   minPrice: number; // in cents
   currency: string; // ISO 4217 code
 };
 
-export type CategoryMastersResponse = {
+export type MastersListResponse = {
   total: number;
-  masters: CategoryMasterCardResponse[];
+  masters: MasterListCardResponse[];
 };
 
 export type CityWithCountResponse = {

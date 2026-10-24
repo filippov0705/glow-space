@@ -9,17 +9,56 @@
     font-size: 24px;
     font-weight: 500;
     color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 20px;
+    }
   }
 
   &__frame {
     position: relative;
     // keeps Leaflet's internal z-indexes from overlapping the header
     isolation: isolate;
-    height: 280px;
+    // The section is full width, so the height grows with the viewport to
+    // keep the map from turning into a thin strip on desktop
+    height: 440px;
     overflow: hidden;
     border: 1px solid #e5e3df;
     border-radius: 14px;
     background: #efe7e0;
+
+    @media (max-width: 1280px) {
+      height: 400px;
+    }
+
+    @media (max-width: 768px) {
+      height: 320px;
+    }
+
+    // Not lower: the docked card covers the bottom of the map and needs room
+    // left above it for panning to a tapped pin
+    @media (max-width: 480px) {
+      height: 280px;
+    }
+  }
+
+  // The mobile replacement for the popup. It is a sibling of the Leaflet
+  // container, so `.leaflet-container a` and the popup resets don't reach it.
+  &__dockedCard {
+    position: absolute;
+    right: 10px;
+    // Clears the OSM attribution strip, which must stay visible (OSM tile
+    // policy): Leaflet's 12px font with `line-height: 1.4` and no margin makes
+    // it about 17px tall, so the card ends about 7px above it.
+    bottom: 24px;
+    left: 10px;
+    // Above the map pane (400), like the chip. It no longer overlaps the
+    // control corners (1000), so it doesn't need to beat them.
+    z-index: 500;
+    padding: 10px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.14);
   }
 
   &__chip {

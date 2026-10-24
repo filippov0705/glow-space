@@ -3,7 +3,7 @@ export type Coordinates = {
   lng: number;
 };
 
-const EARTH_RADIUS_KM = 6371;
+export const EARTH_RADIUS_KM = 6371;
 
 const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
 

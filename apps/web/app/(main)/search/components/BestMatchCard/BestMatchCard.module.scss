@@ -1,0 +1,143 @@
+// Desktop: photo on the left, content on the right.
+// Mobile: photo on top, then the content.
+.card {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid #e5e3df;
+  border-radius: 16px;
+  background: #ffffff;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+
+  &__photo {
+    --master-cover-placeholder-size: 14px;
+
+    position: relative;
+    flex: 0 0 27%;
+    min-height: 220px;
+
+    // Taken out of the flow so the photo's natural size doesn't set the
+    // card height; it fills whatever height the content needs
+    img {
+      position: absolute;
+      inset: 0px;
+    }
+
+    @media (max-width: 480px) {
+      flex: none;
+      height: 190px;
+      min-height: 0px;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0px;
+    padding: 22px 24px;
+
+    @media (max-width: 480px) {
+      gap: 12px;
+      padding: 16px;
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0px 12px;
+    border-radius: 999px;
+    background: #fbeaf0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #993556;
+  }
+
+  &__info {
+    --master-rating-size: 14px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+  }
+
+  &__name {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.15;
+    color: #1a1a1a;
+    overflow-wrap: anywhere;
+
+    @media (max-width: 480px) {
+      font-size: 22px;
+    }
+  }
+
+  &__subtitle {
+    margin: 0px;
+    font-size: 14px;
+    color: rgb(92, 90, 87);
+  }
+
+  &__price {
+    margin: 0px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    white-space: nowrap;
+
+    // Own line on mobile
+    @media (max-width: 480px) {
+      flex-basis: 100%;
+    }
+  }
+
+  &__explanation {
+    align-self: stretch;
+    margin: 0px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f6f4f1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(64, 62, 59);
+  }
+
+  // Link styled like the primary Button
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0px 20px;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    background: #1a1a1a;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    text-decoration: none;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      border-color: #404040;
+      background: #404040;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #d4537e;
+      outline-offset: 2px;
+    }
+  }
+}

@@ -3,7 +3,21 @@
   flex-direction: column;
   gap: 40px;
   width: 100%;
-  max-width: 840px;
-  margin: 0 auto;
+  // No max-width: sections line up with the full-width header, whose side paddings
+  // are repeated here
   padding: 2rem 2rem 3rem;
+
+  @media (max-width: 1280px) {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 32px;
+  }
 }

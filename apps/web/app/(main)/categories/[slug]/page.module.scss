@@ -3,12 +3,23 @@
   flex-direction: column;
   gap: 22px;
   width: 100%;
-  max-width: 840px;
-  margin: 0 auto;
+  // No max-width: sections line up with the full-width header, whose side paddings
+  // are repeated here
   padding: 2rem 2rem 3rem;
 
+  @media (max-width: 1280px) {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
   @media (max-width: 480px) {
-    padding: 1.5rem 1rem 2.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
   }
 
   &__breadcrumb {
@@ -64,9 +75,19 @@
     justify-content: space-between;
     gap: 12px;
 
-    @media (max-width: 640px) {
+    @media (max-width: 480px) {
       flex-direction: column;
+      align-items: stretch;
     }
+  }
+
+  // Sort select; on mobile also the "8 of 214" counter on the left
+  &__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
   }
 
   &__chips {
@@ -74,6 +95,17 @@
     flex-wrap: wrap;
     gap: 8px;
     min-width: 0px;
+
+    @media (max-width: 480px) {
+      flex-wrap: nowrap;
+      align-self: stretch;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
   }
 
   &__chip {
@@ -95,6 +127,11 @@
 
     &:hover {
       border-color: #1a1a1a;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #d4537e;
+      outline-offset: -2px;
     }
 
     &--active {

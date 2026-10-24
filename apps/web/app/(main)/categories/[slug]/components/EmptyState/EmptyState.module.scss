@@ -48,11 +48,18 @@
     justify-content: center;
     gap: 10px;
     margin-top: 10px;
+
+    // Stacked, full-width buttons; flex items stretch across the card
+    @media (max-width: 480px) {
+      flex-direction: column;
+      align-self: stretch;
+    }
   }
 
   &__link {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     box-sizing: border-box;
     text-decoration: none;
   }

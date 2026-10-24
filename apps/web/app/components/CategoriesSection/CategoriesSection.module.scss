@@ -19,6 +19,13 @@
     &:hover {
       text-decoration: underline;
     }
+
+    &:focus-visible {
+      border-radius: 4px;
+      outline: 2px solid #d4537e;
+      outline-offset: 2px;
+      text-decoration: underline;
+    }
   }
 
   &__title {
@@ -27,6 +34,10 @@
     font-size: 24px;
     font-weight: 500;
     color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 20px;
+    }
   }
 
   &__empty {
@@ -43,11 +54,11 @@
     padding: 0px;
     list-style: none;
 
-    @media (max-width: 720px) {
+    @media (max-width: 768px) {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    @media (max-width: 420px) {
+    @media (max-width: 480px) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }

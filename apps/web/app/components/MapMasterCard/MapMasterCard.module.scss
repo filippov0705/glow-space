@@ -69,12 +69,64 @@
     white-space: nowrap;
     --master-rating-size: 11px;
   }
+
+  // A single row docked at the bottom of the mobile map: photo, name over
+  // "category · rating", and the "View" button. It is rendered outside the
+  // Leaflet container, so the popup resets don't apply here.
+  &_docked {
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    height: auto;
+
+    .mapCard__photo {
+      width: 56px;
+      height: 56px;
+    }
+
+    .mapCard__body {
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .mapCard__name {
+      font-size: 14px;
+      line-height: 18px;
+    }
+
+    .mapCard__rating {
+      flex-shrink: 0;
+      line-height: 15px;
+      --master-rating-size: 12px;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0px;
+  }
+
+  // the category shrinks first, so the rating stays readable
+  &__meta &__category {
+    min-width: 0px;
+  }
+
+  &__separator {
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 15px;
+    color: rgb(92, 90, 87);
+  }
 }
 
 // (0,3,1) here would tie with the popup's `a { color: inherit }` reset, so
 // the extra class gives (0,4,1) and the white text wins regardless of load
-// order. The hover state is (0,5,1).
-.mapCard .mapCard__footer a.mapCard__link:any-link {
+// order. The hover state is (0,5,1). The docked card is outside the popup,
+// so its selector only needs to share the declarations.
+.mapCard .mapCard__footer a.mapCard__link:any-link,
+.mapCard_docked a.mapCard__link:any-link {
   flex-shrink: 0;
   padding: 5px 10px;
   border-radius: 7px;
@@ -94,4 +146,12 @@
     outline: 2px solid #d4537e;
     outline-offset: 2px;
   }
+}
+
+// a larger touch target on mobile
+.mapCard_docked a.mapCard__link:any-link {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 16px;
 }

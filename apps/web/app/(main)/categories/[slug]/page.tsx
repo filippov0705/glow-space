@@ -3,20 +3,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MASTER_SORTS } from "@glow-space/shared";
+import MastersCount, {
+  MastersCountProvider,
+} from "@/app/components/MastersGrid/MastersCount";
+import MastersGrid from "@/app/components/MastersGrid/MastersGrid";
+import SortSelect from "@/app/components/SortSelect/SortSelect";
 import mastersApi from "@/lib/api/masters";
 import { formatCount } from "@/lib/format";
-import { resolveCurrentCity } from "../../actions";
-import EmptyState from "./components/EmptyState/EmptyState";
-import MastersGrid from "./components/MastersGrid/MastersGrid";
-import OtherCities from "./components/OtherCities/OtherCities";
-import SortSelect from "./components/SortSelect/SortSelect";
+import { joinNames, toMasterGridItem } from "@/lib/masterCard";
 import {
-  PAGE_SIZE,
   SORT_LABELS,
   SORT_SUBTITLES,
-  categoryHref,
+  parseOrigin,
   parseSort,
-} from "./query";
+} from "@/lib/masterSort";
+import { resolveCurrentCity } from "../../actions";
+import { loadMoreMasters } from "./actions";
+import EmptyState from "./components/EmptyState/EmptyState";
+import OtherCities from "./components/OtherCities/OtherCities";
+import { PAGE_SIZE, categoryHref } from "./query";
 import styles from "./page.module.scss";
 
 // Memoized per request: generateMetadata and the page both need it.
@@ -56,6 +61,7 @@ export default async function CategoryPage(
     (subcategory) => subcategory.slug === query.sub,
   )?.slug;
   const sort = parseSort(query.sort);
+  const origin = parseOrigin(sort, query.lat, query.lng);
 
   const { total, masters } = await mastersApi.getCategoryMasters(slug, {
     city: city.slug,
@@ -63,6 +69,8 @@ export default async function CategoryPage(
     sort,
     offset: 0,
     limit: PAGE_SIZE,
+    lat: origin?.lat,
+    lng: origin?.lng,
   });
 
   // total === 0 means the whole category is empty in the city: `sub` is
@@ -73,6 +81,9 @@ export default async function CategoryPage(
     total === 0 ? await mastersApi.getCategoryCities(slug, city.slug) : null;
 
   const title = `${category.name} in ${city.name}`;
+  // Remounts the grid and its counter when the list changes, dropping
+  // appended pages
+  const listKey = [city.slug, sub, sort, origin?.lat, origin?.lng].join(":");
 
   return (
     <main className={styles.page}>
@@ -104,51 +115,65 @@ export default async function CategoryPage(
             </p>
           </div>
 
-          <div className={styles.page__toolbar}>
-            <nav aria-label="Subcategories" className={styles.page__chips}>
-              <Link
-                href={categoryHref(slug, undefined, sort)}
-                scroll={false}
-                className={`${styles.page__chip} ${sub ? "" : styles["page__chip--active"]}`}
-                aria-current={sub ? undefined : "page"}
-              >
-                All
-              </Link>
-              {subcategories.map((subcategory) => {
-                const active = subcategory.slug === sub;
-                return (
-                  <Link
-                    key={subcategory.slug}
-                    href={categoryHref(slug, subcategory.slug, sort)}
-                    scroll={false}
-                    className={`${styles.page__chip} ${active ? styles["page__chip--active"] : ""}`}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    {subcategory.name}
-                  </Link>
-                );
+          <MastersCountProvider
+            key={listKey}
+            shown={masters.length}
+            total={total}
+          >
+            <div className={styles.page__toolbar}>
+              <nav aria-label="Subcategories" className={styles.page__chips}>
+                <Link
+                  href={categoryHref(slug, undefined, sort, origin)}
+                  scroll={false}
+                  className={`${styles.page__chip} ${sub ? "" : styles["page__chip--active"]}`}
+                  aria-current={sub ? undefined : "page"}
+                >
+                  All
+                </Link>
+                {subcategories.map((subcategory) => {
+                  const active = subcategory.slug === sub;
+                  return (
+                    <Link
+                      key={subcategory.slug}
+                      href={categoryHref(slug, subcategory.slug, sort, origin)}
+                      scroll={false}
+                      className={`${styles.page__chip} ${active ? styles["page__chip--active"] : ""}`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      {subcategory.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className={styles.page__controls}>
+                <MastersCount />
+                <SortSelect
+                  value={sort}
+                  options={MASTER_SORTS.map((option) => ({
+                    value: option,
+                    label: SORT_LABELS[option],
+                    href: categoryHref(slug, sub, option),
+                  }))}
+                />
+              </div>
+            </div>
+
+            <MastersGrid
+              initialMasters={masters.map((master) =>
+                toMasterGridItem(master, joinNames(master.subcategories)),
+              )}
+              initialTotal={total}
+              loadMore={loadMoreMasters.bind(null, {
+                categorySlug: slug,
+                citySlug: city.slug,
+                sub,
+                sort,
+                lat: origin?.lat,
+                lng: origin?.lng,
               })}
-            </nav>
-
-            <SortSelect
-              value={sort}
-              options={MASTER_SORTS.map((option) => ({
-                value: option,
-                label: SORT_LABELS[option],
-                href: categoryHref(slug, sub, option),
-              }))}
             />
-          </div>
-
-          <MastersGrid
-            key={`${city.slug}:${sub ?? ""}:${sort}`}
-            categorySlug={slug}
-            citySlug={city.slug}
-            sub={sub}
-            sort={sort}
-            initialMasters={masters}
-            initialTotal={total}
-          />
+          </MastersCountProvider>
         </>
       )}
     </main>

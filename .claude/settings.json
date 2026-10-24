@@ -3,14 +3,27 @@
     "allow": [
       "Bash(find *)",
       "Bash(grep *)",
-      "Bash(sed -n *)",
-      "Bash(cat *)",
       "Bash(ls *)",
       "Bash(npm run lint)",
       "Bash(npm run lint --prefix *)",
       "Bash(npx eslint *)",
       "Bash(npm test)",
-      "Bash(npm test --prefix *)"
+      "Bash(npm test --prefix *)",
+
+      "Bash(npx --no-install tsc --noEmit)",
+      "Bash(npx --no-install tsc --noEmit -p *)",
+
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git status)",
+      "Bash(git status *)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Bash(git diff *--output*)",
+      "Bash(git diff *--no-index*)",
+      "Bash(git diff *--ext-diff*)"
     ]
   },
   "hooks": {

@@ -3,15 +3,106 @@ import MasterService from '../services/master.service';
 import MasterResponder from '../responders/master.responder';
 
 describe('MasterController', () => {
-  let masterService: { getTop: jest.Mock; getMapPoints: jest.Mock };
+  let masterService: {
+    getTop: jest.Mock;
+    getMapPoints: jest.Mock;
+    getList: jest.Mock;
+  };
   let controller: MasterController;
 
   beforeEach(() => {
-    masterService = { getTop: jest.fn(), getMapPoints: jest.fn() };
+    masterService = {
+      getTop: jest.fn(),
+      getMapPoints: jest.fn(),
+      getList: jest.fn(),
+    };
     controller = new MasterController(
       masterService as unknown as MasterService,
       new MasterResponder(),
     );
+  });
+
+  describe('getList', () => {
+    it('returns the total and list cards with distinct sorted subcategories and the price', async () => {
+      masterService.getList.mockResolvedValue({
+        total: 30,
+        masters: [
+          {
+            uuid: 'm-1',
+            displayName: 'Anna K.',
+            photoUrl: null,
+            rating: 4.9,
+            reviewsCount: 128,
+            categories: [
+              { category: { slug: 'nails', name: 'Nails', imageUrl: null } },
+              { category: { slug: 'brows', name: 'Brows', imageUrl: null } },
+            ],
+            works: [{ imageUrl: 'https://img/1' }],
+            offerings: [
+              {
+                subcategory: {
+                  id: 2,
+                  slug: 'art',
+                  name: 'Nail art',
+                  sortOrder: 2,
+                },
+              },
+              {
+                subcategory: { id: 1, slug: 'gel', name: 'Gel', sortOrder: 1 },
+              },
+              {
+                subcategory: {
+                  id: 2,
+                  slug: 'art',
+                  name: 'Nail art',
+                  sortOrder: 2,
+                },
+              },
+            ],
+            minPrice: 2500,
+            currency: 'EUR',
+          },
+        ],
+      });
+      const query = {
+        city: 'vilnius',
+        category: 'nails',
+        subcategory: 'gel',
+        priceMax: 3500,
+        sort: 'nearest' as const,
+        offset: 0,
+        limit: 12,
+        lat: 54.7,
+        lng: 25.3,
+      };
+
+      const result = await controller.getList(query);
+
+      expect(masterService.getList).toHaveBeenCalledWith(query);
+      expect(result).toEqual({
+        total: 30,
+        masters: [
+          {
+            uuid: 'm-1',
+            name: 'Anna K.',
+            categories: [
+              { slug: 'nails', name: 'Nails', imageUrl: null },
+              { slug: 'brows', name: 'Brows', imageUrl: null },
+            ],
+            photoUrl: null,
+            coverUrl: 'https://img/1',
+            rating: 4.9,
+            reviewsCount: 128,
+            subcategories: [
+              { slug: 'gel', name: 'Gel' },
+              { slug: 'art', name: 'Nail art' },
+            ],
+            minPrice: 2500,
+            currency: 'EUR',
+          },
+        ],
+      });
+    });
   });
 
   describe('getTop', () => {

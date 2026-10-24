@@ -1,0 +1,87 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  // About half the content width, but not too narrow on tablet
+  max-width: max(520px, 50%);
+  padding: 24px;
+  border: 1px solid #e5e3df;
+  border-radius: 16px;
+  background: #ffffff;
+
+  @media (max-width: 480px) {
+    max-width: none;
+    padding: 20px 16px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 21px;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: #d4537e;
+  }
+
+  &__text {
+    margin: 0px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(92, 90, 87);
+  }
+
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0px 0px;
+    padding: 0px;
+    list-style: none;
+  }
+
+  &__category {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 14px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    text-decoration: none;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      border-color: #1a1a1a;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #d4537e;
+      outline-offset: 2px;
+    }
+  }
+
+  &__hint {
+    margin: 4px 0px 0px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgb(92, 90, 87);
+  }
+}

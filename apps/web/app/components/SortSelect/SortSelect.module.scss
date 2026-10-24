@@ -30,6 +30,12 @@
       outline: none;
       border-color: #d4537e;
     }
+
+    // While the browser asks for the location
+    &:disabled {
+      cursor: progress;
+      opacity: 0.6;
+    }
   }
 
   &__icon {

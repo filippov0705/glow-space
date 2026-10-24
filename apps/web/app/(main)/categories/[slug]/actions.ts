@@ -1,52 +1,69 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { CategoryMastersResponse } from "@glow-space/shared";
 import mastersApi from "@/lib/api/masters";
 import { getCityBySlug } from "@/lib/city";
+import {
+  LoadMoreMastersResult,
+  joinNames,
+  toMasterGridItem,
+} from "@/lib/masterCard";
+import { parseOrigin, parseSort } from "@/lib/masterSort";
 import { isSlug } from "@/lib/slug";
 import { CITY_COOKIE, CITY_COOKIE_MAX_AGE } from "@/app/constants";
-import { PAGE_SIZE, parseSort } from "./query";
+import { PAGE_SIZE } from "./query";
 
 export type LoadMoreMastersInput = {
   categorySlug: string;
   citySlug: string;
   sub?: string;
   sort: string;
-  offset: number;
+  // Only with the nearest sort
+  lat?: number;
+  lng?: number;
 };
 
-export type LoadMoreMastersResult =
-  | ({ ok: true } & CategoryMastersResponse)
-  | { ok: false };
-
-// Next page for "Show more". The city comes from the rendered page, so
-// appended masters always match the ones already shown.
+// Next page for "Show more". The page binds `input` to its filters; the
+// city comes from the rendered page, so appended masters always match
+// the ones already shown.
 export async function loadMoreMasters(
   input: LoadMoreMastersInput,
+  offset: number,
 ): Promise<LoadMoreMastersResult> {
-  // Actions are public POST endpoints, so the input shape isn't trusted
+  // Actions are public POST endpoints (bound arguments included), so the
+  // input shape isn't trusted
   if (typeof input !== "object" || input === null) return { ok: false };
 
   const city = getCityBySlug(input.citySlug);
   if (
     !city ||
     !isSlug(input.categorySlug) ||
-    !Number.isInteger(input.offset) ||
-    input.offset < 0
+    !Number.isInteger(offset) ||
+    offset < 0
   ) {
     return { ok: false };
   }
+
+  const sort = parseSort(input.sort);
+  const origin = parseOrigin(sort, input.lat, input.lng);
 
   try {
     const result = await mastersApi.getCategoryMasters(input.categorySlug, {
       city: city.slug,
       sub: isSlug(input.sub) ? input.sub : undefined,
-      sort: parseSort(input.sort),
-      offset: input.offset,
+      sort,
+      offset,
       limit: PAGE_SIZE,
+      lat: origin?.lat,
+      lng: origin?.lng,
     });
-    return { ok: true, ...result };
+    return {
+      ok: true,
+      total: result.total,
+      masters: result.masters.map((master) =>
+        toMasterGridItem(master, joinNames(master.subcategories)),
+      ),
+    };
   } catch (error) {
     console.error(error);
     return { ok: false };

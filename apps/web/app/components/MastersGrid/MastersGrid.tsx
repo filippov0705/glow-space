@@ -1,33 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type {
-  CategoryMasterCardResponse,
-  MasterSort,
-} from "@glow-space/shared";
 import Button from "@/app/components/Button/Button";
-import { loadMoreMasters } from "../../actions";
-import CategoryMasterCard from "../CategoryMasterCard/CategoryMasterCard";
+import MasterListCard from "@/app/components/MasterListCard/MasterListCard";
+import type { LoadMoreMastersResult, MasterGridItem } from "@/lib/masterCard";
+import { useMastersCount } from "./MastersCount";
 import styles from "./MastersGrid.module.scss";
 
 type MastersGridProps = {
-  categorySlug: string;
-  citySlug: string;
-  sub?: string;
-  sort: MasterSort;
-  initialMasters: CategoryMasterCardResponse[];
+  initialMasters: MasterGridItem[];
   initialTotal: number;
+  // A server action bound to the page's filters; gets the next offset
+  loadMore: (offset: number) => Promise<LoadMoreMastersResult>;
 };
 
-// The page passes a key built from sub and sort, so changing the filter
-// remounts this component and drops the appended pages.
+// The page keys this component (or a parent such as MastersCountProvider)
+// by its filters, so changing them remounts it and drops the appended pages.
 export default function MastersGrid({
-  categorySlug,
-  citySlug,
-  sub,
-  sort,
   initialMasters,
   initialTotal,
+  loadMore,
 }: MastersGridProps) {
   const [masters, setMasters] = useState(initialMasters);
   const [total, setTotal] = useState(initialTotal);
@@ -36,6 +28,7 @@ export default function MastersGrid({
   const [offset, setOffset] = useState(initialMasters.length);
   const [failed, setFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const count = useMastersCount();
 
   const hasMore = offset < total;
 
@@ -43,30 +36,25 @@ export default function MastersGrid({
     setFailed(false);
     startTransition(async () => {
       try {
-        const result = await loadMoreMasters({
-          categorySlug,
-          citySlug,
-          sub,
-          sort,
-          offset,
-        });
+        const result = await loadMore(offset);
         if (!result.ok) {
           setFailed(true);
           return;
         }
-        // Skip masters already shown in case the list shifted between pages
-        setMasters((current) => {
-          const shown = new Set(current.map((master) => master.uuid));
-          return [
-            ...current,
-            ...result.masters.filter((master) => !shown.has(master.uuid)),
-          ];
-        });
-        setOffset(offset + result.masters.length);
+        // Skip masters already shown in case the list shifted between pages.
+        // The button is disabled while loading, so `masters` is current.
+        const shown = new Set(masters.map((master) => master.uuid));
+        const nextMasters = [
+          ...masters,
+          ...result.masters.filter((master) => !shown.has(master.uuid)),
+        ];
         // An empty page means the list ended early; stop offering more
-        setTotal(
-          result.masters.length === 0 ? offset : result.total,
-        );
+        const nextTotal = result.masters.length === 0 ? offset : result.total;
+
+        setMasters(nextMasters);
+        setOffset(offset + result.masters.length);
+        setTotal(nextTotal);
+        count?.setCount({ shown: nextMasters.length, total: nextTotal });
       } catch (error) {
         console.error(error);
         setFailed(true);
@@ -79,7 +67,7 @@ export default function MastersGrid({
       <ul className={styles.masters__grid}>
         {masters.map((master) => (
           <li key={master.uuid} className={styles.masters__item}>
-            <CategoryMasterCard master={master} />
+            <MasterListCard master={master} />
           </li>
         ))}
       </ul>

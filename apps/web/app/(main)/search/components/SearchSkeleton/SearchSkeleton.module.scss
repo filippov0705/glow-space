@@ -1,0 +1,76 @@
+// Layout comes from the real components' classes (see SearchSkeleton.tsx);
+// this file only paints them grey
+$skeleton-color: #ece9e5;
+
+@mixin pulse {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// Solid block: photos and the sort select
+.block {
+  @include pulse;
+
+  background: $skeleton-color;
+}
+
+// Text kept for its size only: invisible, on a grey background. Doubled class
+// so it beats the component's own background and colour (badge, chips, button)
+// whatever order the stylesheets load in
+.ghost.ghost {
+  @include pulse;
+
+  border-color: transparent;
+  background: $skeleton-color;
+  color: transparent;
+  user-select: none;
+
+  * {
+    color: transparent;
+  }
+}
+
+// Rounds plain text lines; pills and boxes keep their own radius
+.text.text {
+  border-radius: 6px;
+}
+
+// Only as wide as the text, inside a stretching column
+.fit {
+  align-self: flex-start;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &__icon {
+    flex-shrink: 0;
+    color: #d4537e;
+  }
+}
+
+// Same size as SortSelect
+.sort {
+  flex-shrink: 0;
+  width: 110px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+// Three columns on tablet: keep a single row
+.item:nth-child(4) {
+  @media (max-width: 768px) and (min-width: 481px) {
+    display: none;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

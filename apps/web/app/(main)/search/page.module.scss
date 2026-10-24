@@ -1,0 +1,25 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  // No max-width: sections line up with the full-width header, whose side paddings
+  // are repeated here
+  padding: 2rem 2rem 3rem;
+
+  @media (max-width: 1280px) {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 20px;
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+  }
+}

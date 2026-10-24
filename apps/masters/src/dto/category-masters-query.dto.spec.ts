@@ -21,6 +21,8 @@ describe('CategoryMastersQueryDTO', () => {
     expect(dto.offset).toBe(0);
     expect(dto.limit).toBe(8);
     expect(dto.sub).toBeUndefined();
+    expect(dto.lat).toBeUndefined();
+    expect(dto.lng).toBeUndefined();
     await expect(validate(dto)).resolves.toEqual([]);
   });
 
@@ -34,7 +36,7 @@ describe('CategoryMastersQueryDTO', () => {
   });
 
   it('rejects a sort that is not in MASTER_SORTS', async () => {
-    await expect(invalidProperties({ sort: 'nearest' })).resolves.toEqual([
+    await expect(invalidProperties({ sort: 'cheapest' })).resolves.toEqual([
       'sort',
     ]);
   });
@@ -61,5 +63,45 @@ describe('CategoryMastersQueryDTO', () => {
 
   it('rejects an empty sub', async () => {
     await expect(invalidProperties({ sub: '' })).resolves.toEqual(['sub']);
+  });
+
+  it('converts lat and lng to numbers', async () => {
+    const dto = toDto({ lat: '54.687', lng: '-25.28' });
+
+    expect(dto.lat).toBe(54.687);
+    expect(dto.lng).toBe(-25.28);
+    await expect(validate(dto)).resolves.toEqual([]);
+  });
+
+  it('accepts lat and lng at the edges of their ranges', async () => {
+    await expect(
+      invalidProperties({ lat: '-90', lng: '180' }),
+    ).resolves.toEqual([]);
+    await expect(
+      invalidProperties({ lat: '90', lng: '-180' }),
+    ).resolves.toEqual([]);
+  });
+
+  it('rejects lat and lng out of range', async () => {
+    await expect(invalidProperties({ lat: '90.1', lng: '0' })).resolves.toEqual(
+      ['lat'],
+    );
+    await expect(
+      invalidProperties({ lat: '0', lng: '-180.1' }),
+    ).resolves.toEqual(['lng']);
+  });
+
+  it('rejects lat and lng that are not numbers', async () => {
+    await expect(invalidProperties({ lat: 'abc', lng: '' })).resolves.toEqual([
+      'lat',
+      'lng',
+    ]);
+  });
+
+  it('requires lat and lng together', async () => {
+    await expect(invalidProperties({ lat: '54.687' })).resolves.toEqual([
+      'lng',
+    ]);
+    await expect(invalidProperties({ lng: '25.28' })).resolves.toEqual(['lat']);
   });
 });

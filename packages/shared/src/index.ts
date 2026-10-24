@@ -3,6 +3,14 @@ export { hashString } from "./utils/hashString.js";
 export { Status } from "./types/user.js";
 export { MasterStatus, MASTER_SORTS } from "./types/master.js";
 export type { MasterSort } from "./types/master.js";
+export { SUGGESTION_LOCALES, SEARCH_CHIP_KINDS } from "./types/search.js";
+export type { SuggestionLocale, SearchChipKind } from "./types/search.js";
+export type {
+  SearchSuggestionResponse,
+  SearchChipResponse,
+  SearchFiltersResponse,
+  SearchParseResponse,
+} from "./responses/search.js";
 export type {
   GoogleAuthResponse,
   UserResponse,
@@ -18,8 +26,8 @@ export type {
   MasterMapPointResponse,
   SubcategoryResponse,
   CategoryPageResponse,
-  CategoryMasterCardResponse,
-  CategoryMastersResponse,
+  MasterListCardResponse,
+  MastersListResponse,
   CityWithCountResponse,
 } from "./responses/masters.js";
 export { CITIES } from "./data/cities.js";

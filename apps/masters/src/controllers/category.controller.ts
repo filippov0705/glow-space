@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import {
   CategoriesOverviewResponse,
-  CategoryMastersResponse,
   CategoryPageResponse,
   CategoryResponse,
   CityWithCountResponse,
+  MastersListResponse,
 } from '@glow-space/shared';
 import CategoryService from '../services/category.service';
 import CategoryResponder from '../responders/category.responder';
@@ -79,7 +79,7 @@ class CategoryController {
   async getMasters(
     @Param('slug') slug: string,
     @Query() query: CategoryMastersQueryDTO,
-  ): Promise<CategoryMastersResponse> {
+  ): Promise<MastersListResponse> {
     const page = await this.categoryService.getMasters(slug, query);
 
     return this.categoryResponder.categoryMastersResponse(page);

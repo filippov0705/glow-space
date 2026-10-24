@@ -1,0 +1,25 @@
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 20px;
+    }
+  }
+}

@@ -12,7 +12,12 @@ import MasterRepository, {
 import { Category, City, Subcategory } from 'src/generated/prisma';
 
 describe('CategoryService', () => {
-  const city = { id: 1, slug: 'vilnius' } as City;
+  const city = {
+    id: 1,
+    slug: 'vilnius',
+    lat: 54.6872,
+    lng: 25.2797,
+  } as City;
   const category = { id: 5, slug: 'nails' } as Category;
   let categoryRepository: {
     findAll: jest.Mock;
@@ -25,7 +30,7 @@ describe('CategoryService', () => {
   let cityRepository: { findBySlug: jest.Mock };
   let masterRepository: {
     countActiveByCity: jest.Mock;
-    findCategoryPage: jest.Mock;
+    findPage: jest.Mock;
     findCategoryCardsByIds: jest.Mock;
   };
   let service: CategoryService;
@@ -42,7 +47,7 @@ describe('CategoryService', () => {
     cityRepository = { findBySlug: jest.fn().mockResolvedValue(city) };
     masterRepository = {
       countActiveByCity: jest.fn(),
-      findCategoryPage: jest.fn(),
+      findPage: jest.fn(),
       findCategoryCardsByIds: jest.fn(),
     };
     service = new CategoryService(
@@ -138,7 +143,7 @@ describe('CategoryService', () => {
     };
 
     it('returns cards in the order of the paged query with price and total', async () => {
-      masterRepository.findCategoryPage.mockResolvedValue({
+      masterRepository.findPage.mockResolvedValue({
         total: 11,
         rows: [
           { id: 3, minPrice: 1500, currency: 'EUR' },
@@ -161,10 +166,12 @@ describe('CategoryService', () => {
           { id: 2, minPrice: 2500, currency: 'EUR' },
         ],
       });
-      expect(masterRepository.findCategoryPage).toHaveBeenCalledWith({
-        categoryId: 5,
+      expect(masterRepository.findPage).toHaveBeenCalledWith({
         cityId: 1,
+        categoryId: 5,
         subcategoryId: null,
+        priceMax: null,
+        origin: { lat: 54.6872, lng: 25.2797 },
         sort: 'price_asc',
         offset: 8,
         limit: 8,
@@ -182,7 +189,7 @@ describe('CategoryService', () => {
         categoryId: 5,
         slug: 'manicure',
       });
-      masterRepository.findCategoryPage.mockResolvedValue({
+      masterRepository.findPage.mockResolvedValue({
         total: 0,
         rows: [],
       });
@@ -193,13 +200,43 @@ describe('CategoryService', () => {
         5,
         'manicure',
       );
-      expect(masterRepository.findCategoryPage).toHaveBeenCalledWith(
+      expect(masterRepository.findPage).toHaveBeenCalledWith(
         expect.objectContaining({ subcategoryId: 10 }),
       );
     });
 
+    it('measures nearest from the given lat and lng', async () => {
+      masterRepository.findPage.mockResolvedValue({ total: 0, rows: [] });
+
+      await service.getMasters('nails', {
+        ...query,
+        sort: 'nearest',
+        lat: 54.7,
+        lng: 25.3,
+      });
+
+      expect(masterRepository.findPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sort: 'nearest',
+          origin: { lat: 54.7, lng: 25.3 },
+        }),
+      );
+    });
+
+    it('measures nearest from the city centre without lat and lng', async () => {
+      masterRepository.findPage.mockResolvedValue({ total: 0, rows: [] });
+
+      await service.getMasters('nails', { ...query, sort: 'nearest' });
+
+      expect(masterRepository.findPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          origin: { lat: 54.6872, lng: 25.2797 },
+        }),
+      );
+    });
+
     it('returns an empty page without loading cards when nothing matches', async () => {
-      masterRepository.findCategoryPage.mockResolvedValue({
+      masterRepository.findPage.mockResolvedValue({
         total: 0,
         rows: [],
       });
@@ -212,7 +249,7 @@ describe('CategoryService', () => {
     });
 
     it('keeps the real total when the offset is past the end', async () => {
-      masterRepository.findCategoryPage.mockResolvedValue({
+      masterRepository.findPage.mockResolvedValue({
         total: 3,
         rows: [],
       });
@@ -229,7 +266,7 @@ describe('CategoryService', () => {
       await expect(
         service.getMasters('nails', { ...query, sub: 'unknown' }),
       ).rejects.toThrow(NotFoundException);
-      expect(masterRepository.findCategoryPage).not.toHaveBeenCalled();
+      expect(masterRepository.findPage).not.toHaveBeenCalled();
     });
 
     it('throws NotFoundException for an unknown category', async () => {
@@ -238,7 +275,7 @@ describe('CategoryService', () => {
       await expect(service.getMasters('unknown', query)).rejects.toThrow(
         NotFoundException,
       );
-      expect(masterRepository.findCategoryPage).not.toHaveBeenCalled();
+      expect(masterRepository.findPage).not.toHaveBeenCalled();
     });
 
     it('throws NotFoundException for an unknown city', async () => {
@@ -247,7 +284,7 @@ describe('CategoryService', () => {
       await expect(
         service.getMasters('nails', { ...query, city: 'atlantis' }),
       ).rejects.toThrow(NotFoundException);
-      expect(masterRepository.findCategoryPage).not.toHaveBeenCalled();
+      expect(masterRepository.findPage).not.toHaveBeenCalled();
     });
   });
 

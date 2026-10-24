@@ -7,6 +7,8 @@ import CategoryRepository, {
   CityWithMastersCount,
 } from '../repository/category.repository';
 import { haversineKm } from '../utils/haversine';
+import { sortOrigin } from '../utils/origin';
+import { mergePageCards } from '../utils/page-cards';
 import MasterRepository, {
   CategoryMasterCard,
 } from '../repository/master.repository';
@@ -18,6 +20,9 @@ export type CategoryMastersQuery = {
   sort: MasterSort;
   offset: number;
   limit: number;
+  // Origin for the nearest sort. Set together or not at all; the city centre otherwise.
+  lat?: number;
+  lng?: number;
 };
 
 export type CategoryMasterItem = CategoryMasterCard & {
@@ -82,10 +87,12 @@ class CategoryService {
       ? await this.getSubcategoryBySlug(category.id, query.sub)
       : null;
 
-    const { total, rows } = await this.masterRepository.findCategoryPage({
-      categoryId: category.id,
+    const { total, rows } = await this.masterRepository.findPage({
       cityId: city.id,
+      categoryId: category.id,
       subcategoryId: subcategory?.id ?? null,
+      priceMax: null,
+      origin: sortOrigin(query, city),
       sort: query.sort,
       offset: query.offset,
       limit: query.limit,
@@ -99,15 +106,8 @@ class CategoryService {
       rows.map((row) => row.id),
       category.id,
     );
-    const cardsById = new Map(cards.map((card) => [card.id, card]));
-    const masters = rows.flatMap((row) => {
-      const card = cardsById.get(row.id);
-      return card
-        ? [{ ...card, minPrice: row.minPrice, currency: row.currency }]
-        : [];
-    });
 
-    return { total, masters };
+    return { total, masters: mergePageCards(rows, cards) };
   }
 
   // The nearest other cities (by straight-line distance between city centres)

@@ -10,6 +10,9 @@ export const GEOLOCATION_URL = "https://ipwho.is";
 export const GOOGLE_STATE_COOKIE = "google_state";
 export const GOOGLE_STATE_MAX_AGE = 60 * 60 * 24 * 7;
 export const REGISTER_RETRY_COUNT = 4;
+// Keep in sync with the 480px breakpoint in the SCSS modules
+// (Header.module.scss, MapSection.module.scss)
+export const MOBILE_QUERY = "(max-width: 480px)";
 // NEXT_PUBLIC_ vars must be referenced literally so Next inlines them into the client bundle.
 export const MAP_TILE_URL =
   process.env.NEXT_PUBLIC_MAP_TILE_URL ||
@@ -24,6 +27,10 @@ export const MAP_MARKER_ACTIVE_RADIUS = 9;
 export const MAP_POPUP_AUTO_PAN_PADDING = 16;
 // keeps the open card below the "Map" chip in the top-left corner
 export const MAP_POPUP_AUTO_PAN_PADDING_TOP = 44;
+// Pans a tapped pin clear of the card docked at the bottom of the mobile map:
+// the card is about 76px tall and sits 24px above the frame's bottom edge
+// (above the attribution strip), plus 16px of breathing room.
+export const MAP_DOCKED_CARD_PAN_PADDING_BOTTOM = 120;
 export const MAP_DEFAULT_ZOOM = 12;
 export const MAP_SINGLE_POINT_ZOOM = 14;
 export const MAP_MAX_FIT_ZOOM = 15;

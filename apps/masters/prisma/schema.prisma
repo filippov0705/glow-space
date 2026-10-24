@@ -126,3 +126,15 @@ model Work {
   @@index([masterId, sortOrder])
   @@map("works")
 }
+
+model SearchSuggestion {
+  id        String  @id @default(uuid())
+  text      String
+  locale    String // "en", "ru", "lt"
+  citySlug  String? @map("city_slug") // null = all cities
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  @@index([locale, isActive])
+  @@map("search_suggestions")
+}

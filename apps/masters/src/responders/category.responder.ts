@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import {
   CategoriesOverviewResponse,
-  CategoryMasterCardResponse,
-  CategoryMastersResponse,
   CategoryPageResponse,
   CategoryResponse,
   CategoryWithCountResponse,
   CityWithCountResponse,
+  MastersListResponse,
   SubcategoryResponse,
 } from '@glow-space/shared';
 import { Category, Subcategory } from 'src/generated/prisma';
@@ -16,10 +15,7 @@ import {
   CategoryWithMastersCount,
   CityWithMastersCount,
 } from '../repository/category.repository';
-import {
-  CategoryMasterItem,
-  CategoryMastersPage,
-} from '../services/category.service';
+import { CategoryMastersPage } from '../services/category.service';
 import MasterResponder from './master.responder';
 
 @Injectable()
@@ -56,38 +52,13 @@ class CategoryResponder {
   }
 
   subcategoryResponse(subcategory: Subcategory): SubcategoryResponse {
-    return {
-      slug: subcategory.slug,
-      name: subcategory.name,
-    };
+    return this.masterResponder.subcategoryResponse(subcategory);
   }
 
-  // Subcategories are distinct, from the master's active offerings in the category,
-  // in subcategory sortOrder, regardless of the subcategory filter.
-  categoryMasterCardResponse(
-    master: CategoryMasterItem,
-  ): CategoryMasterCardResponse {
-    const subcategories = new Map(
-      master.offerings.map(({ subcategory }) => [subcategory.id, subcategory]),
-    );
-
-    return {
-      ...this.masterResponder.cardResponse(master),
-      subcategories: [...subcategories.values()]
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((subcategory) => this.subcategoryResponse(subcategory)),
-      minPrice: master.minPrice,
-      currency: master.currency,
-    };
-  }
-
-  categoryMastersResponse(page: CategoryMastersPage): CategoryMastersResponse {
-    return {
-      total: page.total,
-      masters: page.masters.map((master) =>
-        this.categoryMasterCardResponse(master),
-      ),
-    };
+  // Same contract as GET /masters; subcategories are from the master's active
+  // offerings in the category.
+  categoryMastersResponse(page: CategoryMastersPage): MastersListResponse {
+    return this.masterResponder.listResponse(page);
   }
 
   cityWithCountResponse(city: CityWithMastersCount): CityWithCountResponse {
