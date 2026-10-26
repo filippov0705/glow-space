@@ -776,7 +776,42 @@ const searchSuggestions = [
   },
 ];
 
-const WORKS_PER_CATEGORY = 2;
+const WORKS_PER_CATEGORY = 8;
+
+const languages = [
+  { code: 'en', name: 'English', sortOrder: 1 },
+  { code: 'ru', name: 'Russian', sortOrder: 2 },
+  { code: 'lt', name: 'Lithuanian', sortOrder: 3 },
+];
+
+// Profile details are picked from the master's position, so the profile page
+// has masters without experience, without languages or without an about text
+// (Elena V. and Viktorija S. have none of them, so their About section is omitted).
+const LANGUAGE_SETS = [
+  ['en', 'ru', 'lt'],
+  ['lt', 'en'],
+  [],
+  ['ru', 'en'],
+  ['lt'],
+];
+const EXPERIENCE_YEARS = [7, 4, null, 12, 3, null];
+const ANNA_ABOUT =
+  "Hi, I'm Anna! I've been doing nails for seven years and still love every appointment. I work with hypoallergenic gel polishes, sterilise every tool after each client and take my time on cuticle care, so your manicure stays neat for three weeks or more. Bring a photo of the design you like, or let's pick one together.";
+const ABOUT_TEXTS = [
+  'I believe beauty work should feel relaxed and unhurried. I listen first, suggest options that suit you, and use only professional products I trust.',
+  'Certified master who keeps up with new techniques every season. Clean studio, careful work and honest advice on what will last.',
+];
+
+const profileData = (index: number) => ({
+  about:
+    index === 0
+      ? ANNA_ABOUT
+      : index % 3 === 2
+        ? null
+        : ABOUT_TEXTS[index % ABOUT_TEXTS.length],
+  experienceYears: EXPERIENCE_YEARS[index % EXPERIENCE_YEARS.length],
+  languageCodes: LANGUAGE_SETS[index % LANGUAGE_SETS.length],
+});
 
 // Reviews per master, by position. Masters with 0 stay "New" (no rating), which
 // the top masters block and the cards rely on.
@@ -965,6 +1000,16 @@ const slugify = (name: string) =>
     .replace(/^-|-$/g, '');
 
 async function main() {
+  const languageIds = new Map<string, number>();
+  for (const language of languages) {
+    const { id } = await prisma.language.upsert({
+      where: { code: language.code },
+      create: language,
+      update: language,
+    });
+    languageIds.set(language.code, id);
+  }
+
   for (const city of CITIES) {
     await prisma.city.upsert({
       where: { slug: city.slug },
@@ -1007,7 +1052,13 @@ async function main() {
     const { id: cityId } = await prisma.city.findUniqueOrThrow({
       where: { slug: city },
     });
-    const masterData = { ...data, cityId, status: MasterStatus.ACTIVE };
+    const { languageCodes, ...profile } = profileData(masterIndex);
+    const masterData = {
+      ...data,
+      ...profile,
+      cityId,
+      status: MasterStatus.ACTIVE,
+    };
 
     const master = await prisma.master.upsert({
       where: { userUuid: data.userUuid },
@@ -1044,6 +1095,15 @@ async function main() {
         subcategoryId: subcategory.id,
       };
     });
+    const languageData = languageCodes.map((code) => {
+      const languageId = languageIds.get(code);
+      if (languageId === undefined) {
+        throw new Error(
+          `Master ${data.displayName}: unknown language "${code}"`,
+        );
+      }
+      return { masterId: master.id, languageId };
+    });
 
     // Offerings and works reference master_categories, so they are removed first.
     await prisma.offering.deleteMany({ where: { masterId: master.id } });
@@ -1068,6 +1128,9 @@ async function main() {
         })),
       ),
     });
+
+    await prisma.masterLanguage.deleteMany({ where: { masterId: master.id } });
+    await prisma.masterLanguage.createMany({ data: languageData });
 
     const workingHours = weeklySchedule(masterIndex);
     const workingWeekdays = new Set(workingHours.map((row) => row.weekday));

@@ -50,24 +50,27 @@ model Subcategory {
 }
 
 model Master {
-  id           Int     @id @default(autoincrement())
-  uuid         String  @unique @default(uuid())
-  userUuid     String  @unique @map("user_uuid")
-  displayName  String  @map("display_name")
-  photoUrl     String? @map("photo_url")
-  status       Int
-  cityId       Int     @map("city_id")
-  address      String
-  lat          Float
-  lng          Float
-  rating       Float?
-  reviewsCount Int     @default(0) @map("reviews_count")
+  id              Int     @id @default(autoincrement())
+  uuid            String  @unique @default(uuid())
+  userUuid        String  @unique @map("user_uuid")
+  displayName     String  @map("display_name")
+  photoUrl        String? @map("photo_url")
+  status          Int
+  cityId          Int     @map("city_id")
+  address         String
+  lat             Float
+  lng             Float
+  rating          Float?
+  reviewsCount    Int     @default(0) @map("reviews_count")
+  about           String? @db.Text
+  experienceYears Int?    @map("experience_years")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   city       City             @relation(fields: [cityId], references: [id])
   categories MasterCategory[]
+  languages  MasterLanguage[]
   works      Work[]
   offerings  Offering[]
 
@@ -91,6 +94,28 @@ model MasterCategory {
 
   @@id([masterId, categoryId])
   @@map("master_categories")
+}
+
+model Language {
+  id        Int    @id @default(autoincrement())
+  code      String @unique
+  name      String
+  sortOrder Int    @default(0) @map("sort_order")
+
+  masters MasterLanguage[]
+
+  @@map("languages")
+}
+
+model MasterLanguage {
+  masterId   Int @map("master_id")
+  languageId Int @map("language_id")
+
+  master   Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@id([masterId, languageId])
+  @@map("master_languages")
 }
 
 model Offering {

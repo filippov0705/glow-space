@@ -1,9 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { MasterSort } from '@glow-space/shared';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { isUUID } from 'class-validator';
+import { MasterSort, MasterStatus } from '@glow-space/shared';
+import { Review } from 'src/generated/prisma';
 import MasterRepository, {
   CategoryMasterCard,
   MasterCard,
+  MasterProfile,
+  RatingCount,
 } from '../repository/master.repository';
+import BookingService from './booking.service';
 import { sortOrigin } from '../utils/origin';
 import { mergePageCards } from '../utils/page-cards';
 import CategoryService from './category.service';
@@ -35,12 +44,26 @@ export type MastersList = {
   masters: MasterListItem[];
 };
 
+export const PROFILE_REVIEWS_LIMIT = 3;
+
+// Ratings of the distribution, in display order.
+const RATINGS = [5, 4, 3, 2, 1];
+
+export type MasterProfileDetails = {
+  master: MasterProfile;
+  // Always five rows, 5 down to 1.
+  ratingDistribution: RatingCount[];
+  reviews: Review[];
+  nextSlots: string[];
+};
+
 @Injectable()
 class MasterService {
   constructor(
     private readonly cityService: CityService,
     private readonly categoryService: CategoryService,
     private readonly masterRepository: MasterRepository,
+    private readonly bookingService: BookingService,
   ) {}
 
   // Masters with a rating go first, best rated first.
@@ -116,6 +139,38 @@ class MasterService {
     );
 
     return { total, masters: mergePageCards(rows, cards) };
+  }
+
+  // Only active masters can be opened. A malformed uuid is treated as unknown.
+  async getProfile(uuid: string): Promise<MasterProfileDetails> {
+    const master = isUUID(uuid)
+      ? await this.masterRepository.findProfileByUuid(uuid)
+      : null;
+    if (!master || master.status !== Number(MasterStatus.ACTIVE)) {
+      throw new NotFoundException('Master not found');
+    }
+
+    const [counts, reviews, nextSlots] = await Promise.all([
+      this.masterRepository.countReviewsByRating(master.id),
+      this.masterRepository.findLatestTextReviews(
+        master.id,
+        PROFILE_REVIEWS_LIMIT,
+      ),
+      this.bookingService.getNextSlots(master.id, new Date()),
+    ]);
+    const countByRating = new Map(
+      counts.map(({ rating, count }) => [rating, count]),
+    );
+
+    return {
+      master,
+      ratingDistribution: RATINGS.map((rating) => ({
+        rating,
+        count: countByRating.get(rating) ?? 0,
+      })),
+      reviews,
+      nextSlots,
+    };
   }
 }
 

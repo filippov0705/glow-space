@@ -1,10 +1,15 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import MasterService, { MastersListQuery } from './master.service';
+import { MasterStatus } from '@glow-space/shared';
 import CityService from './city.service';
 import CategoryService from './category.service';
+import BookingService from './booking.service';
 import CityRepository from '../repository/city.repository';
 import CategoryRepository from '../repository/category.repository';
-import MasterRepository, { MasterCard } from '../repository/master.repository';
+import MasterRepository, {
+  MasterCard,
+  MasterProfile,
+} from '../repository/master.repository';
 import { Category, City, Subcategory } from 'src/generated/prisma';
 
 const card = (id: number) => ({ id }) as MasterCard;
@@ -30,7 +35,11 @@ describe('MasterService', () => {
     findCategoryCardsByIds: jest.Mock;
     findActiveCardsByCity: jest.Mock;
     findPage: jest.Mock;
+    findProfileByUuid: jest.Mock;
+    countReviewsByRating: jest.Mock;
+    findLatestTextReviews: jest.Mock;
   };
+  let bookingService: { getNextSlots: jest.Mock };
   let service: MasterService;
 
   beforeEach(() => {
@@ -46,7 +55,11 @@ describe('MasterService', () => {
       findCategoryCardsByIds: jest.fn(),
       findActiveCardsByCity: jest.fn(),
       findPage: jest.fn(),
+      findProfileByUuid: jest.fn(),
+      countReviewsByRating: jest.fn().mockResolvedValue([]),
+      findLatestTextReviews: jest.fn().mockResolvedValue([]),
     };
+    bookingService = { getNextSlots: jest.fn().mockResolvedValue([]) };
     const cityService = new CityService(
       cityRepository as unknown as CityRepository,
     );
@@ -58,6 +71,7 @@ describe('MasterService', () => {
         masterRepository as unknown as MasterRepository,
       ),
       masterRepository as unknown as MasterRepository,
+      bookingService as unknown as BookingService,
     );
   });
 
@@ -292,5 +306,87 @@ describe('MasterService', () => {
       ).rejects.toThrow(NotFoundException);
       expect(masterRepository.findPage).not.toHaveBeenCalled();
     });
+  });
+
+  describe('getProfile', () => {
+    const uuid = '0b7e6a52-3c1f-4a9e-9d2b-6f1c2a7e8d41';
+    const profile = (status: number) =>
+      ({ id: 42, uuid, status }) as MasterProfile;
+
+    it('loads reviews and slots for an active master and fills the distribution', async () => {
+      const master = profile(MasterStatus.ACTIVE);
+      const reviews = [{ id: 'r-1' }];
+      masterRepository.findProfileByUuid.mockResolvedValue(master);
+      masterRepository.countReviewsByRating.mockResolvedValue([
+        { rating: 4, count: 2 },
+        { rating: 5, count: 7 },
+        { rating: 1, count: 1 },
+      ]);
+      masterRepository.findLatestTextReviews.mockResolvedValue(reviews);
+      bookingService.getNextSlots.mockResolvedValue(['2026-10-31T14:00:00']);
+
+      await expect(service.getProfile(uuid)).resolves.toEqual({
+        master,
+        ratingDistribution: [
+          { rating: 5, count: 7 },
+          { rating: 4, count: 2 },
+          { rating: 3, count: 0 },
+          { rating: 2, count: 0 },
+          { rating: 1, count: 1 },
+        ],
+        reviews,
+        nextSlots: ['2026-10-31T14:00:00'],
+      });
+      expect(masterRepository.findProfileByUuid).toHaveBeenCalledWith(uuid);
+      expect(masterRepository.countReviewsByRating).toHaveBeenCalledWith(42);
+      expect(masterRepository.findLatestTextReviews).toHaveBeenCalledWith(
+        42,
+        3,
+      );
+      expect(bookingService.getNextSlots).toHaveBeenCalledWith(
+        42,
+        expect.any(Date),
+      );
+    });
+
+    it('returns five zero rows when there are no reviews', async () => {
+      masterRepository.findProfileByUuid.mockResolvedValue(
+        profile(MasterStatus.ACTIVE),
+      );
+
+      const { ratingDistribution } = await service.getProfile(uuid);
+
+      expect(ratingDistribution).toEqual(
+        [5, 4, 3, 2, 1].map((rating) => ({ rating, count: 0 })),
+      );
+    });
+
+    it('throws NotFoundException for an unknown uuid', async () => {
+      masterRepository.findProfileByUuid.mockResolvedValue(null);
+
+      await expect(service.getProfile(uuid)).rejects.toThrow(NotFoundException);
+      expect(bookingService.getNextSlots).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException for a malformed uuid without a query', async () => {
+      await expect(service.getProfile('not-a-uuid')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(masterRepository.findProfileByUuid).not.toHaveBeenCalled();
+      expect(bookingService.getNextSlots).not.toHaveBeenCalled();
+    });
+
+    it.each([MasterStatus.DRAFT, MasterStatus.PAUSED, MasterStatus.BLOCKED])(
+      'throws NotFoundException for status %s',
+      async (status) => {
+        masterRepository.findProfileByUuid.mockResolvedValue(profile(status));
+
+        await expect(service.getProfile(uuid)).rejects.toThrow(
+          NotFoundException,
+        );
+        expect(masterRepository.countReviewsByRating).not.toHaveBeenCalled();
+        expect(bookingService.getNextSlots).not.toHaveBeenCalled();
+      },
+    );
   });
 });
