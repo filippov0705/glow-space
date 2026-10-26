@@ -207,8 +207,6 @@ const masters = [
     address: 'Gedimino pr. 9, Vilnius',
     lat: 54.6869,
     lng: 25.2765,
-    rating: 4.9,
-    reviewsCount: 128,
     categories: ['nails'],
     offerings: [
       {
@@ -240,8 +238,6 @@ const masters = [
     address: 'Pilies g. 22, Vilnius',
     lat: 54.6833,
     lng: 25.2897,
-    rating: 4.8,
-    reviewsCount: 94,
     categories: ['brows-and-lashes', 'makeup'],
     offerings: [
       {
@@ -273,8 +269,6 @@ const masters = [
     address: 'Konstitucijos pr. 7, Vilnius',
     lat: 54.6965,
     lng: 25.2766,
-    rating: 5.0,
-    reviewsCount: 61,
     categories: ['hair'],
     offerings: [
       {
@@ -306,8 +300,6 @@ const masters = [
     address: 'Vokieciu g. 13, Vilnius',
     lat: 54.6795,
     lng: 25.2834,
-    rating: 4.9,
-    reviewsCount: 87,
     categories: ['makeup'],
     offerings: [
       {
@@ -339,8 +331,6 @@ const masters = [
     address: 'Zirmunu g. 64, Vilnius',
     lat: 54.7105,
     lng: 25.3016,
-    rating: null,
-    reviewsCount: 0,
     categories: ['skincare'],
     offerings: [
       {
@@ -366,8 +356,6 @@ const masters = [
     address: 'Savanoriu pr. 16, Vilnius',
     lat: 54.6801,
     lng: 25.2502,
-    rating: null,
-    reviewsCount: 0,
     categories: ['massage', 'skincare'],
     offerings: [
       {
@@ -399,8 +387,6 @@ const masters = [
     address: 'Brivibas iela 40, Riga',
     lat: 56.9561,
     lng: 24.1189,
-    rating: null,
-    reviewsCount: 0,
     categories: ['nails'],
     offerings: [
       {
@@ -426,8 +412,6 @@ const masters = [
     address: 'Elizabetes iela 51, Riga',
     lat: 56.9551,
     lng: 24.1131,
-    rating: null,
-    reviewsCount: 0,
     categories: ['hair', 'makeup'],
     offerings: [
       {
@@ -453,8 +437,6 @@ const masters = [
     address: 'Terbatas iela 14, Riga',
     lat: 56.9586,
     lng: 24.1265,
-    rating: null,
-    reviewsCount: 0,
     categories: ['massage'],
     offerings: [
       {
@@ -480,8 +462,6 @@ const masters = [
     address: 'Barona iela 31, Riga',
     lat: 56.9536,
     lng: 24.1253,
-    rating: 4.7,
-    reviewsCount: 42,
     categories: ['brows-and-lashes', 'nails'],
     offerings: [
       {
@@ -516,8 +496,6 @@ const masters = [
     address: 'Vokiečių g. 4, Vilnius',
     lat: 54.6805,
     lng: 25.2853,
-    rating: 4.9,
-    reviewsCount: 203,
     categories: ['nails'],
     offerings: [
       {
@@ -549,8 +527,6 @@ const masters = [
     address: 'Konstitucijos pr. 7, Vilnius',
     lat: 54.6961,
     lng: 25.2772,
-    rating: 4.8,
-    reviewsCount: 97,
     categories: ['nails'],
     offerings: [
       {
@@ -576,8 +552,6 @@ const masters = [
     address: 'Didžioji g. 18, Vilnius',
     lat: 54.6788,
     lng: 25.2878,
-    rating: 4.8,
-    reviewsCount: 76,
     categories: ['nails'],
     offerings: [
       {
@@ -603,8 +577,6 @@ const masters = [
     address: 'Savanorių pr. 16, Vilnius',
     lat: 54.6812,
     lng: 25.2634,
-    rating: 4.7,
-    reviewsCount: 151,
     categories: ['nails'],
     offerings: [
       {
@@ -630,8 +602,6 @@ const masters = [
     address: 'Užupio g. 10, Vilnius',
     lat: 54.6814,
     lng: 25.2971,
-    rating: 4.6,
-    reviewsCount: 58,
     categories: ['nails'],
     offerings: [
       {
@@ -657,8 +627,6 @@ const masters = [
     address: 'Žirmūnų g. 64, Vilnius',
     lat: 54.7046,
     lng: 25.2982,
-    rating: 4.5,
-    reviewsCount: 33,
     categories: ['nails'],
     offerings: [
       {
@@ -684,8 +652,6 @@ const masters = [
     address: 'Kalvarijų g. 35, Vilnius',
     lat: 54.6995,
     lng: 25.2858,
-    rating: null,
-    reviewsCount: 0,
     categories: ['nails'],
     offerings: [
       {
@@ -705,8 +671,6 @@ const masters = [
     address: 'Vilniaus g. 31, Vilnius',
     lat: 54.6862,
     lng: 25.2801,
-    rating: 4.9,
-    reviewsCount: 64,
     categories: ['nails'],
     offerings: [
       {
@@ -813,6 +777,86 @@ const searchSuggestions = [
 ];
 
 const WORKS_PER_CATEGORY = 2;
+
+// Reviews per master, by position. Masters with 0 stay "New" (no rating), which
+// the top masters block and the cards rely on.
+const REVIEW_COUNTS = [8, 6, 5, 7, 0, 0, 0, 0, 0, 4, 9, 6, 5, 7, 4, 3, 0, 5];
+
+// Star ratings are read from this ring starting at the master's position, so
+// averages differ between masters and stay the same on every run.
+const REVIEW_RATINGS = [5, 5, 4, 5, 5, 3, 5, 4, 5, 5, 4, 5];
+
+const REVIEW_AUTHORS = [
+  'Laura G.',
+  'Monika S.',
+  'Kristina V.',
+  'Agnė B.',
+  'Jurgita P.',
+  'Ewa K.',
+  'Marija L.',
+  'Inga T.',
+  'Rūta D.',
+];
+
+const REVIEW_TEXTS: Record<number, string[]> = {
+  5: [
+    'Lovely result, exactly what I asked for. Will definitely come back.',
+    'Very careful and precise work, and it still looks perfect after two weeks.',
+    'Cosy place and great attention to detail. Highly recommend!',
+  ],
+  4: [
+    'Good work overall, just had to wait about ten minutes past my slot.',
+    'Nice result, though it took a bit longer than I expected.',
+  ],
+  3: ['The result is fine, but the appointment felt rushed.'],
+};
+
+const REVIEW_REPLIES = [
+  'Thank you so much, see you next time!',
+  'Thanks for the feedback, we will keep your notes in mind.',
+];
+
+// Reviews are dated back from a fixed day, not the run date, so reruns don't
+// reshuffle the newest-first list.
+const REVIEWS_BASE_DATE = Date.UTC(2026, 9, 20, 12);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Every third review is star-only (no text); every fourth review with text has
+// the master's reply. Matches the CHECKs in the master_reviews migration.
+const reviewData = (
+  masterId: number,
+  masterIndex: number,
+  offeringNames: string[],
+) =>
+  Array.from({ length: REVIEW_COUNTS[masterIndex] ?? 0 }, (_, reviewIndex) => {
+    const rating =
+      REVIEW_RATINGS[(masterIndex + reviewIndex) % REVIEW_RATINGS.length];
+    const texts = REVIEW_TEXTS[rating];
+    const text =
+      reviewIndex % 3 === 2
+        ? null
+        : texts[(masterIndex + reviewIndex) % texts.length];
+    const createdAt = new Date(
+      REVIEWS_BASE_DATE - (reviewIndex * 9 + masterIndex) * DAY_MS,
+    );
+    const replied = text !== null && reviewIndex % 4 === 0;
+
+    return {
+      masterId,
+      // Fake client uuids, unique per master (one review per client per master)
+      clientUserUuid: `00000000-0000-4000-9000-${String(masterIndex).padStart(6, '0')}${String(reviewIndex).padStart(6, '0')}`,
+      authorName:
+        REVIEW_AUTHORS[(masterIndex * 2 + reviewIndex) % REVIEW_AUTHORS.length],
+      offeringName: offeringNames[reviewIndex % offeringNames.length],
+      rating,
+      text,
+      replyText: replied
+        ? REVIEW_REPLIES[masterIndex % REVIEW_REPLIES.length]
+        : null,
+      repliedAt: replied ? new Date(createdAt.getTime() + DAY_MS) : null,
+      createdAt,
+    };
+  });
 
 type Interval = { startTime: string; endTime: string };
 
@@ -1041,6 +1085,28 @@ async function main() {
       data: (scheduleExceptions[masterIndex] ?? []).map((exception) =>
         exceptionData(master.id, workingWeekdays, exception),
       ),
+    });
+
+    const reviews = reviewData(
+      master.id,
+      masterIndex,
+      offerings.map((offering) => offering.name),
+    );
+    await prisma.review.deleteMany({ where: { masterId: master.id } });
+    await prisma.review.createMany({ data: reviews });
+
+    // rating and reviewsCount are derived from the seeded reviews: the average
+    // of all reviews (star-only included), rounded to one decimal; null if none.
+    const ratingSum = reviews.reduce((sum, review) => sum + review.rating, 0);
+    await prisma.master.update({
+      where: { id: master.id },
+      data: {
+        rating:
+          reviews.length > 0
+            ? Math.round((ratingSum / reviews.length) * 10) / 10
+            : null,
+        reviewsCount: reviews.length,
+      },
     });
   }
 
