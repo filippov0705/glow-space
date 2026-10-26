@@ -2,13 +2,16 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  // The page is full width; the hero keeps a readable column as in the mockup
-  max-width: 760px;
+  // The page is full width; the hero keeps a readable column centred on the page as in the mockup
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 
   &__text {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    text-align: center;
   }
 
   &__title {
@@ -54,6 +57,7 @@
   &__chips {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 8px;
     margin: 0;
     padding: 0;
@@ -63,6 +67,8 @@
     // Vertical padding keeps the focus outline from being clipped.
     @media (max-width: 480px) {
       flex-wrap: nowrap;
+      // Centring an overflowing row would cut off its start.
+      justify-content: flex-start;
       margin: -4px -16px;
       padding: 4px 16px;
       overflow-x: auto;

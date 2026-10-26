@@ -10,7 +10,7 @@
   background: white;
 
   &__photo {
-    height: 135px;
+    aspect-ratio: 4 / 3;
     flex-shrink: 0;
   }
 
