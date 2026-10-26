@@ -9,6 +9,11 @@ import { SearchSuggestion } from 'src/generated/prisma';
 import { SearchExtras, SearchParseResult } from '../services/search.service';
 import CategoryResponder from './category.responder';
 
+type ExtraFilters = Pick<
+  SearchFiltersResponse,
+  'priceMax' | 'origin' | 'dateFrom' | 'dateTo'
+>;
+
 const euros = (cents: number): string =>
   `€${Number.isInteger(cents / 100) ? cents / 100 : (cents / 100).toFixed(2)}`;
 
@@ -34,6 +39,7 @@ class SearchResponder {
           this.categoryResponder.categoryResponse(category),
         ),
         ...extras,
+        geocoded: result.geocoded,
       };
     }
 
@@ -50,15 +56,16 @@ class SearchResponder {
       status: 'ok',
       filters: { ...filters, ...extras.filters },
       chips: [...chips, ...extras.chips],
+      geocoded: result.geocoded,
     };
   }
 
   // Filters and chips for the price, day and area, shared by both outcomes.
   private extrasResponse(extras: SearchExtras): {
-    filters: Pick<SearchFiltersResponse, 'priceMax'>;
+    filters: ExtraFilters;
     chips: SearchChipResponse[];
   } {
-    const filters: Pick<SearchFiltersResponse, 'priceMax'> = {};
+    const filters: ExtraFilters = {};
     const chips: SearchChipResponse[] = [];
     if (extras.priceMax !== null) {
       filters.priceMax = extras.priceMax;
@@ -70,8 +77,15 @@ class SearchResponder {
     if (extras.day) {
       chips.push({ kind: 'day', label: extras.day });
     }
+    if (extras.dateFrom !== null && extras.dateTo !== null) {
+      filters.dateFrom = extras.dateFrom;
+      filters.dateTo = extras.dateTo;
+    }
     if (extras.area) {
       chips.push({ kind: 'area', label: extras.area });
+    }
+    if (extras.origin) {
+      filters.origin = extras.origin;
     }
 
     return { filters, chips };

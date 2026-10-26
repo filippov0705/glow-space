@@ -1010,7 +1010,8 @@ async function main() {
     languageIds.set(language.code, id);
   }
 
-  for (const city of CITIES) {
+  for (const { slug, name, country, lat, lng } of CITIES) {
+    const city = { slug, name, country, lat, lng };
     await prisma.city.upsert({
       where: { slug: city.slug },
       create: city,

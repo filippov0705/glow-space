@@ -34,6 +34,9 @@ export type MastersListParams = MastersPageParams & {
   subcategory?: string;
   // In cents
   priceMax?: number;
+  // Local dates of a free slot, YYYY-MM-DD, inclusive; both or neither
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 class MastersApi {

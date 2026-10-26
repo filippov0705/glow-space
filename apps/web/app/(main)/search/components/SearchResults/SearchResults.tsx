@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 import {
   MASTER_SORTS,
+  MasterSort,
   MastersListResponse,
   SearchChipKind,
   SearchChipResponse,
@@ -11,7 +12,7 @@ import MastersGrid from "@/app/components/MastersGrid/MastersGrid";
 import SortSelect from "@/app/components/SortSelect/SortSelect";
 import mastersApi from "@/lib/api/masters";
 import { toMasterGridItem } from "@/lib/masterCard";
-import { SORT_LABELS } from "@/lib/masterSort";
+import { DEFAULT_SORT, Origin, SORT_LABELS } from "@/lib/masterSort";
 import { resolveCurrentCity } from "../../../actions";
 import { loadMoreSearchResults } from "../../actions";
 import {
@@ -34,22 +35,25 @@ type SearchResultsProps = {
   params: SearchParams;
 };
 
+// The area chip only sorts, so it doesn't narrow the list
 const FILTER_CHIP_KINDS = new Set<SearchChipKind>([
   "category",
   "subcategory",
   "priceMax",
+  "day",
 ]);
 
 // The first page also holds Best match, so the grid starts with a full page
 const FIRST_PAGE_LIMIT = PAGE_SIZE + 1;
 
-// Filters and chips from the parser, minus the removed kinds. Removing the
-// category also drops the subcategory: /masters needs a category for it.
-// A clarify response has no category, but its price, day and area still count.
+// Filters, the place and chips from the parser, minus the removed kinds.
+// Removing the category also drops the subcategory: /masters needs a
+// category for it. A clarify response has no category, but its price, day
+// and area still count.
 function fromParser(
   parsed: SearchParseResponse,
   removed: Set<SearchChipKind>,
-): { filters: SearchFilters; chips: SearchChipResponse[] } {
+): { filters: SearchFilters; place?: Origin; chips: SearchChipResponse[] } {
   const parsedFilters: SearchFiltersResponse = parsed.filters;
   const category = removed.has("category") ? undefined : parsedFilters.category;
   const subcategory =
@@ -57,9 +61,17 @@ function fromParser(
       ? parsedFilters.subcategory
       : undefined;
   const priceMax = removed.has("priceMax") ? undefined : parsedFilters.priceMax;
+  const withDay = !removed.has("day");
 
   return {
-    filters: { category, subcategory, priceMax },
+    filters: {
+      category,
+      subcategory,
+      priceMax,
+      dateFrom: withDay ? parsedFilters.dateFrom : undefined,
+      dateTo: withDay ? parsedFilters.dateTo : undefined,
+    },
+    place: removed.has("area") ? undefined : parsedFilters.origin,
     chips: parsed.chips.filter(
       (chip) =>
         !removed.has(chip.kind) &&
@@ -78,15 +90,21 @@ export default async function SearchResults({ params }: SearchResultsProps) {
   const removed = new Set(params.without);
   const parserResult = fromParser(parsed, removed);
 
+  // A place in the query sorts by distance from it unless another sort was
+  // picked, and it beats the browser location
+  const { place } = parserResult;
+  const sort: MasterSort = params.sort ?? (place ? "nearest" : DEFAULT_SORT);
+  const origin = sort === "nearest" ? (place ?? params.origin) : undefined;
+
   const fetchFirstPage = (filters: SearchFilters) =>
     mastersApi.getMasters({
       city: city.slug,
       ...filters,
-      sort: params.sort,
+      sort,
       offset: 0,
       limit: FIRST_PAGE_LIMIT,
-      lat: params.origin?.lat,
-      lng: params.origin?.lng,
+      lat: origin?.lat,
+      lng: origin?.lng,
     });
 
   let category = removed.has("category") ? undefined : params.category;
@@ -102,6 +120,8 @@ export default async function SearchResults({ params }: SearchResultsProps) {
     const overrideFilters: SearchFilters = {
       category,
       priceMax: parserResult.filters.priceMax,
+      dateFrom: parserResult.filters.dateFrom,
+      dateTo: parserResult.filters.dateTo,
     };
     try {
       firstPage = await fetchFirstPage(overrideFilters);
@@ -153,14 +173,11 @@ export default async function SearchResults({ params }: SearchResultsProps) {
     chips.find((chip) => chip.kind === "category")?.label;
 
   // Remounts the grid when the list changes, dropping appended pages
-  const listKey = JSON.stringify([
-    city.slug,
-    filters,
-    params.sort,
-    params.origin,
-  ]);
-  // Day and area chips are display-only, so only these narrow the list
+  const listKey = JSON.stringify([city.slug, filters, sort, origin]);
   const hasFilters = chips.some((chip) => FILTER_CHIP_KINDS.has(chip.kind));
+  // Geoapify's free plan requires its and OpenStreetMap's attribution
+  // wherever a geocoded place is used
+  const showGeoAttribution = parsed.geocoded && place !== undefined;
 
   return (
     <>
@@ -172,6 +189,22 @@ export default async function SearchResults({ params }: SearchResultsProps) {
             removeHref: withoutHref(effective, chip.kind),
           }))}
         />
+      )}
+
+      {showGeoAttribution && (
+        <p className={styles.attribution}>
+          <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
+            Powered by Geoapify
+          </a>
+          {" · "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noreferrer"
+          >
+            © OpenStreetMap contributors
+          </a>
+        </p>
       )}
 
       {!bestMatch ? (
@@ -197,7 +230,7 @@ export default async function SearchResults({ params }: SearchResultsProps) {
                   More masters ({moreTotal.toLocaleString("en-US")})
                 </h2>
                 <SortSelect
-                  value={params.sort}
+                  value={sort}
                   options={MASTER_SORTS.map((option) => ({
                     value: option,
                     label: SORT_LABELS[option],
@@ -219,9 +252,9 @@ export default async function SearchResults({ params }: SearchResultsProps) {
                 loadMore={loadMoreSearchResults.bind(null, {
                   citySlug: city.slug,
                   ...filters,
-                  sort: params.sort,
-                  lat: params.origin?.lat,
-                  lng: params.origin?.lng,
+                  sort,
+                  lat: origin?.lat,
+                  lng: origin?.lng,
                 })}
               />
             </section>

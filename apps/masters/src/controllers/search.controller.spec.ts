@@ -87,7 +87,11 @@ describe('SearchController', () => {
           },
           priceMax: 3500,
           day: 'Saturday',
-          area: 'Near center',
+          dateFrom: '2026-10-24',
+          dateTo: '2026-10-24',
+          area: 'Near Panerių g. 45',
+          origin: { lat: 54.668, lng: 25.263 },
+          geocoded: true,
         }),
       };
       const controller = new SearchController(
@@ -98,14 +102,22 @@ describe('SearchController', () => {
 
       await expect(controller.parse(query)).resolves.toEqual({
         status: 'ok',
-        filters: { category: 'nails', subcategory: 'manicure', priceMax: 3500 },
+        filters: {
+          category: 'nails',
+          subcategory: 'manicure',
+          priceMax: 3500,
+          dateFrom: '2026-10-24',
+          dateTo: '2026-10-24',
+          origin: { lat: 54.668, lng: 25.263 },
+        },
         chips: [
           { kind: 'category', label: 'Nails' },
           { kind: 'subcategory', label: 'Manicure' },
           { kind: 'priceMax', label: 'Up to €35' },
           { kind: 'day', label: 'Saturday' },
-          { kind: 'area', label: 'Near center' },
+          { kind: 'area', label: 'Near Panerių g. 45' },
         ],
+        geocoded: true,
       });
       expect(searchService.parse).toHaveBeenCalledWith(query);
     });
@@ -118,7 +130,11 @@ describe('SearchController', () => {
           subcategory: null,
           priceMax: 2550,
           day: null,
+          dateFrom: null,
+          dateTo: null,
           area: null,
+          origin: null,
+          geocoded: false,
         }),
       };
       const controller = new SearchController(
@@ -135,6 +151,7 @@ describe('SearchController', () => {
           { kind: 'category', label: 'Nails' },
           { kind: 'priceMax', label: 'Up to €25.50' },
         ],
+        geocoded: false,
       });
     });
 
@@ -145,7 +162,11 @@ describe('SearchController', () => {
           categories: [nails, hair],
           priceMax: null,
           day: null,
+          dateFrom: null,
+          dateTo: null,
           area: null,
+          origin: null,
+          geocoded: false,
         }),
       };
       const controller = new SearchController(
@@ -163,6 +184,7 @@ describe('SearchController', () => {
         ],
         filters: {},
         chips: [],
+        geocoded: false,
       });
     });
 
@@ -173,7 +195,11 @@ describe('SearchController', () => {
           categories: [nails],
           priceMax: 3000,
           day: 'Saturday',
+          dateFrom: '2026-10-24',
+          dateTo: '2026-10-24',
           area: 'Near center',
+          origin: { lat: 54.6872, lng: 25.2797 },
+          geocoded: false,
         }),
       };
       const controller = new SearchController(
@@ -188,12 +214,18 @@ describe('SearchController', () => {
         categories: [
           { slug: 'nails', name: 'Nails', imageUrl: 'https://img/nails' },
         ],
-        filters: { priceMax: 3000 },
+        filters: {
+          priceMax: 3000,
+          dateFrom: '2026-10-24',
+          dateTo: '2026-10-24',
+          origin: { lat: 54.6872, lng: 25.2797 },
+        },
         chips: [
           { kind: 'priceMax', label: 'Up to €30' },
           { kind: 'day', label: 'Saturday' },
           { kind: 'area', label: 'Near center' },
         ],
+        geocoded: false,
       });
     });
   });

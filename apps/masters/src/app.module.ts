@@ -10,6 +10,7 @@ import CityService from './services/city.service';
 import CategoryService from './services/category.service';
 import MasterService from './services/master.service';
 import SearchService from './services/search.service';
+import GeocodingService from './services/geocoding.service';
 import CategoryController from './controllers/category.controller';
 import MasterController from './controllers/master.controller';
 import SearchController from './controllers/search.controller';
@@ -33,6 +34,7 @@ import SearchResponder from './responders/search.responder';
     CategoryService,
     MasterService,
     SearchService,
+    GeocodingService,
     CategoryResponder,
     MasterResponder,
     SearchResponder,

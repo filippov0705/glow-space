@@ -1,6 +1,8 @@
+import { NotFoundException } from '@nestjs/common';
 import SearchService from './search.service';
 import SearchSuggestionRepository from '../repository/search-suggestion.repository';
 import CategoryRepository from '../repository/category.repository';
+import GeocodingService from './geocoding.service';
 import { Category, SearchSuggestion, Subcategory } from 'src/generated/prisma';
 
 describe('SearchService', () => {
@@ -11,6 +13,7 @@ describe('SearchService', () => {
     findAll: jest.Mock;
     findAllSubcategories: jest.Mock;
   };
+  let geocodingService: { geocode: jest.Mock };
   let service: SearchService;
 
   beforeEach(() => {
@@ -19,9 +22,11 @@ describe('SearchService', () => {
       findAll: jest.fn(),
       findAllSubcategories: jest.fn(),
     };
+    geocodingService = { geocode: jest.fn().mockResolvedValue(null) };
     service = new SearchService(
       searchSuggestionRepository as unknown as SearchSuggestionRepository,
       categoryRepository as unknown as CategoryRepository,
+      geocodingService as unknown as GeocodingService,
     );
   });
 
@@ -106,7 +111,14 @@ describe('SearchService', () => {
       name: 'Evening makeup',
     } as Subcategory;
 
+    // From the CITIES seed.
+    const vilniusCentre = { lat: 54.6872, lng: 25.2797 };
+    const noArea = { area: null, origin: null, geocoded: false };
+    const noDay = { day: null, dateFrom: null, dateTo: null };
+
     beforeEach(() => {
+      // Wednesday 2026-10-21, 12:00 in Vilnius.
+      jest.useFakeTimers({ now: new Date('2026-10-21T09:00:00Z') });
       categoryRepository.findAll.mockResolvedValue(categories);
       categoryRepository.findAllSubcategories.mockResolvedValue([
         manicure,
@@ -115,6 +127,10 @@ describe('SearchService', () => {
         eveningMakeup,
         sports,
       ]);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
     });
 
     const parse = (q: string) => service.parse({ q, city: 'vilnius' });
@@ -144,8 +160,13 @@ describe('SearchService', () => {
         subcategory: seededNails[2],
         priceMax: 3500,
         day: 'Saturday',
+        dateFrom: '2026-10-24',
+        dateTo: '2026-10-24',
         area: 'Near center',
+        origin: vilniusCentre,
+        geocoded: false,
       });
+      expect(geocodingService.geocode).not.toHaveBeenCalled();
     });
 
     it('asks to clarify with all categories when nothing matches', async () => {
@@ -154,7 +175,9 @@ describe('SearchService', () => {
         categories,
         priceMax: null,
         day: 'Tomorrow',
-        area: null,
+        dateFrom: '2026-10-22',
+        dateTo: '2026-10-22',
+        ...noArea,
       });
     });
 
@@ -166,7 +189,11 @@ describe('SearchService', () => {
         categories,
         priceMax: 3000,
         day: 'Saturday',
+        dateFrom: '2026-10-24',
+        dateTo: '2026-10-24',
         area: 'Near center',
+        origin: vilniusCentre,
+        geocoded: false,
       });
     });
 
@@ -176,8 +203,8 @@ describe('SearchService', () => {
         category: nails,
         subcategory: null,
         priceMax: null,
-        day: null,
-        area: null,
+        ...noDay,
+        ...noArea,
       });
     });
 
@@ -237,7 +264,113 @@ describe('SearchService', () => {
     it('returns the first day word and the old town area', async () => {
       await expect(
         parse('manicure this weekend or tomorrow in the old town'),
-      ).resolves.toMatchObject({ day: 'Weekend', area: 'Near Old Town' });
+      ).resolves.toMatchObject({
+        day: 'Weekend',
+        area: 'Near Old Town',
+        origin: vilniusCentre,
+      });
+    });
+
+    it('throws NotFoundException for an unknown city', async () => {
+      await expect(
+        service.parse({ q: 'manicure', city: 'atlantis' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    describe('day', () => {
+      it.each([
+        ['today', '2026-10-21', '2026-10-21'],
+        ['tomorrow', '2026-10-22', '2026-10-22'],
+        ['wednesday', '2026-10-21', '2026-10-21'],
+        ['monday', '2026-10-26', '2026-10-26'],
+        ['sunday', '2026-10-25', '2026-10-25'],
+        ['weekend', '2026-10-24', '2026-10-25'],
+      ])('turns "%s" into %s..%s', async (word, dateFrom, dateTo) => {
+        await expect(parse(`manicure ${word}`)).resolves.toMatchObject({
+          dateFrom,
+          dateTo,
+        });
+      });
+
+      it('leaves only Sunday of the weekend on a Sunday', async () => {
+        jest.setSystemTime(new Date('2026-10-25T09:00:00Z'));
+
+        await expect(parse('manicure weekend')).resolves.toMatchObject({
+          dateFrom: '2026-10-25',
+          dateTo: '2026-10-25',
+        });
+      });
+
+      it("takes today in the city's timezone, not the server's", async () => {
+        // Tuesday 22:30 UTC is already Wednesday 01:30 in Vilnius.
+        jest.setSystemTime(new Date('2026-10-20T22:30:00Z'));
+
+        await expect(parse('manicure today')).resolves.toMatchObject({
+          dateFrom: '2026-10-21',
+        });
+      });
+    });
+
+    describe('place', () => {
+      const panerių = {
+        lat: 54.6683162,
+        lng: 25.2634164,
+        label: 'Panerių g. 45',
+      };
+
+      it('geocodes the place around the city and uses it as the origin', async () => {
+        geocodingService.geocode.mockResolvedValue(panerių);
+
+        await expect(
+          parse('Gel manicure near Paneriu 45, under €35, Saturday'),
+        ).resolves.toMatchObject({
+          priceMax: 3500,
+          day: 'Saturday',
+          area: 'Near Panerių g. 45',
+          origin: { lat: 54.6683162, lng: 25.2634164 },
+          geocoded: true,
+        });
+        expect(geocodingService.geocode).toHaveBeenCalledWith(
+          'Paneriu 45',
+          expect.objectContaining(vilniusCentre),
+        );
+      });
+
+      it.each([
+        ['manicure near Paneriu 45 on saturday', 'Paneriu 45'],
+        ['manicure close to Panerių g. 45', 'Panerių g. 45'],
+        ['manicure near the Akropolis tomorrow', 'Akropolis'],
+        ['маникюр недалеко от Вокзальной 5, до 30€', 'Вокзальной 5'],
+        ['маникюр рядом с Акрополисом', 'Акрополисом'],
+      ])('extracts the place from "%s"', async (q, place) => {
+        await parse(q);
+
+        expect(geocodingService.geocode).toHaveBeenCalledWith(
+          place,
+          expect.anything(),
+        );
+      });
+
+      it('keeps a display-only chip when the place is not found', async () => {
+        await expect(parse('manicure near Nowhere 1')).resolves.toMatchObject({
+          area: 'Near Nowhere 1',
+          origin: null,
+          geocoded: false,
+        });
+      });
+
+      it('uses the city centre for "центр" without the geocoder', async () => {
+        await expect(parse('маникюр рядом с центром')).resolves.toMatchObject({
+          area: 'Near center',
+          origin: vilniusCentre,
+        });
+        expect(geocodingService.geocode).not.toHaveBeenCalled();
+      });
+
+      it('leaves "near me" to the browser location', async () => {
+        await expect(parse('manicure near me')).resolves.toMatchObject(noArea);
+        expect(geocodingService.geocode).not.toHaveBeenCalled();
+      });
     });
   });
 });

@@ -1,3 +1,20 @@
+// Geoapify / OpenStreetMap credit under the chips
+.attribution {
+  margin: -8px 0px 0px;
+  font-size: 12px;
+  color: rgb(122, 120, 117);
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: #1a1a1a;
+    }
+  }
+}
+
 .more {
   display: flex;
   flex-direction: column;

@@ -83,6 +83,7 @@ class MasterResponder {
       ).map((subcategory) => this.subcategoryResponse(subcategory)),
       minPrice: master.minPrice,
       currency: master.currency,
+      nextSlot: master.nextSlot,
     };
   }
 

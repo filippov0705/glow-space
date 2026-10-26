@@ -28,6 +28,7 @@ export type CategoryMastersQuery = {
 export type CategoryMasterItem = CategoryMasterCard & {
   minPrice: number;
   currency: string;
+  nextSlot: string | null; // always null: the category page has no dates
 };
 
 export type CategoryMastersPage = {
@@ -93,6 +94,7 @@ class CategoryService {
       subcategoryId: subcategory?.id ?? null,
       priceMax: null,
       origin: sortOrigin(query, city),
+      slots: null,
       sort: query.sort,
       offset: query.offset,
       limit: query.limit,

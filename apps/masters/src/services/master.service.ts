@@ -4,14 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isUUID } from 'class-validator';
-import { MasterSort, MasterStatus } from '@glow-space/shared';
-import { Review } from 'src/generated/prisma';
+import { CITIES, MasterSort, MasterStatus } from '@glow-space/shared';
+import { City, Review } from 'src/generated/prisma';
 import MasterRepository, {
   CategoryMasterCard,
   MasterCard,
   MasterProfile,
+  MastersPageSlots,
   RatingCount,
 } from '../repository/master.repository';
+import { addDays, localNow } from '../utils/local-time';
 import BookingService from './booking.service';
 import { sortOrigin } from '../utils/origin';
 import { mergePageCards } from '../utils/page-cards';
@@ -26,6 +28,9 @@ export type MastersListQuery = {
   subcategory?: string;
   // Highest offering price, in cents.
   priceMax?: number;
+  // Local dates of a free slot, YYYY-MM-DD, inclusive. Set together or not at all.
+  dateFrom?: string;
+  dateTo?: string;
   sort: MasterSort;
   offset: number;
   limit: number;
@@ -37,7 +42,11 @@ export type MastersListQuery = {
 export type MasterListItem = CategoryMasterCard & {
   minPrice: number;
   currency: string;
+  nextSlot: string | null;
 };
+
+// Longest free-slot date range, in days.
+export const SLOT_DATES_MAX_DAYS = 7;
 
 export type MastersList = {
   total: number;
@@ -97,8 +106,8 @@ class MasterService {
     return await this.masterRepository.findActiveCardsByCity(city.id);
   }
 
-  // One page of eligible masters in the city, optionally in one category (and subcategory)
-  // and up to a price.
+  // One page of eligible masters in the city, optionally in one category (and subcategory),
+  // up to a price and with a free slot in the dates.
   async getList(query: MastersListQuery): Promise<MastersList> {
     if (query.subcategory && !query.category) {
       throw new BadRequestException('subcategory requires category');
@@ -124,6 +133,7 @@ class MasterService {
       subcategoryId: subcategory?.id ?? null,
       priceMax: query.priceMax ?? null,
       origin: sortOrigin(query, city),
+      slots: this.slotsFor(query, city),
       sort: query.sort,
       offset: query.offset,
       limit: query.limit,
@@ -171,6 +181,37 @@ class MasterService {
       reviews,
       nextSlots,
     };
+  }
+
+  // Dates are local to the city, so "today" and "now" are taken in its timezone.
+  private slotsFor(
+    query: MastersListQuery,
+    city: City,
+  ): MastersPageSlots | null {
+    const { dateFrom, dateTo } = query;
+    if (dateFrom === undefined || dateTo === undefined) {
+      return null;
+    }
+
+    const timezone = CITIES.find((seed) => seed.slug === city.slug)?.timezone;
+    if (!timezone) {
+      throw new Error(`No timezone for city "${city.slug}"`);
+    }
+
+    const now = localNow(timezone);
+    if (dateFrom < now.date) {
+      throw new BadRequestException('dateFrom is in the past');
+    }
+    if (dateTo < dateFrom) {
+      throw new BadRequestException('dateTo is before dateFrom');
+    }
+    if (dateTo > addDays(dateFrom, SLOT_DATES_MAX_DAYS - 1)) {
+      throw new BadRequestException(
+        `The date range is longer than ${SLOT_DATES_MAX_DAYS} days`,
+      );
+    }
+
+    return { dateFrom, dateTo, now: `${now.date}T${now.time}` };
   }
 }
 

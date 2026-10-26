@@ -12,6 +12,9 @@ export type LoadMoreSearchInput = {
   category?: string;
   subcategory?: string;
   priceMax?: number; // in cents
+  // Local dates of a free slot, YYYY-MM-DD; both or neither
+  dateFrom?: string;
+  dateTo?: string;
   sort: string;
   // Only with the nearest sort
   lat?: number;
@@ -20,6 +23,9 @@ export type LoadMoreSearchInput = {
 
 // The first master of the list is shown as Best match above the grid
 const BEST_MATCH_COUNT = 1;
+
+const isDate = (value: unknown): boolean =>
+  typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
 // Next page for the "More masters" grid. The grid counts only its own
 // cards, so its offset is shifted past Best match here, and the total it
@@ -43,11 +49,15 @@ export async function loadMoreSearchResults(
   const priceMaxValid =
     input.priceMax === undefined ||
     (Number.isInteger(input.priceMax) && input.priceMax >= 1);
+  const datesValid =
+    (input.dateFrom === undefined && input.dateTo === undefined) ||
+    (isDate(input.dateFrom) && isDate(input.dateTo));
   if (
     !city ||
     !categoryValid ||
     !subcategoryValid ||
     !priceMaxValid ||
+    !datesValid ||
     !Number.isInteger(offset) ||
     offset < 0
   ) {
@@ -63,6 +73,8 @@ export async function loadMoreSearchResults(
       category: input.category,
       subcategory: input.subcategory,
       priceMax: input.priceMax,
+      dateFrom: input.dateFrom,
+      dateTo: input.dateTo,
       sort,
       offset: offset + BEST_MATCH_COUNT,
       limit: PAGE_SIZE,

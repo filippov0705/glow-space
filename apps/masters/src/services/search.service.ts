@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { SuggestionLocale } from '@glow-space/shared';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CITIES, CitySeed, SuggestionLocale } from '@glow-space/shared';
 import { Category, SearchSuggestion, Subcategory } from 'src/generated/prisma';
 import SearchSuggestionRepository from '../repository/search-suggestion.repository';
 import CategoryRepository from '../repository/category.repository';
 import { SearchParseQueryDTO } from 'src/dto/search-parse-query.dto';
+import GeocodingService from './geocoding.service';
+import { Coordinates } from '../utils/haversine';
+import { addDays, LocalNow, localNow } from '../utils/local-time';
 
 export const SUGGESTIONS_LIMIT = 6;
 const FALLBACK_LOCALE: SuggestionLocale = 'en';
 
 // What is understood besides the category, in both outcomes. `day` and `area`
-// are display labels only: there is no data to filter by.
+// are chip labels; the dates and the origin are what filters by them.
 export type SearchExtras = {
   priceMax: number | null; // in cents
   day: string | null;
+  dateFrom: string | null; // local YYYY-MM-DD, inclusive
+  dateTo: string | null;
   area: string | null;
+  // Null when the place was not found: the area chip is then display-only.
+  origin: Coordinates | null;
+  // The origin came from Geoapify, whose attribution must be shown.
+  geocoded: boolean;
 };
 
 export type SearchParseResult = SearchExtras &
@@ -45,24 +54,66 @@ const PRICE_PATTERNS = [
   ),
 ];
 
-const DAYS: { word: string; label: string }[] = [
-  { word: 'today', label: 'Today' },
-  { word: 'tomorrow', label: 'Tomorrow' },
-  { word: 'monday', label: 'Monday' },
-  { word: 'tuesday', label: 'Tuesday' },
-  { word: 'wednesday', label: 'Wednesday' },
-  { word: 'thursday', label: 'Thursday' },
-  { word: 'friday', label: 'Friday' },
-  { word: 'saturday', label: 'Saturday' },
-  { word: 'sunday', label: 'Sunday' },
-  { word: 'weekend', label: 'Weekend' },
+type DayWord = {
+  word: string;
+  label: string;
+  // First and last day, as offsets from today, inclusive.
+  offsets: (now: LocalNow) => [number, number];
+};
+
+// The next such weekday, today included.
+const nextWeekday =
+  (weekday: number) =>
+  (now: LocalNow): [number, number] => {
+    const offset = (weekday - now.weekday + 7) % 7;
+    return [offset, offset];
+  };
+
+const DAYS: DayWord[] = [
+  { word: 'today', label: 'Today', offsets: () => [0, 0] },
+  { word: 'tomorrow', label: 'Tomorrow', offsets: () => [1, 1] },
+  { word: 'monday', label: 'Monday', offsets: nextWeekday(1) },
+  { word: 'tuesday', label: 'Tuesday', offsets: nextWeekday(2) },
+  { word: 'wednesday', label: 'Wednesday', offsets: nextWeekday(3) },
+  { word: 'thursday', label: 'Thursday', offsets: nextWeekday(4) },
+  { word: 'friday', label: 'Friday', offsets: nextWeekday(5) },
+  { word: 'saturday', label: 'Saturday', offsets: nextWeekday(6) },
+  { word: 'sunday', label: 'Sunday', offsets: nextWeekday(7) },
+  // The next Saturday and Sunday; on Sunday only Sunday is left.
+  {
+    word: 'weekend',
+    label: 'Weekend',
+    offsets: (now) =>
+      now.weekday === 7 ? [0, 0] : [6 - now.weekday, 7 - now.weekday],
+  },
 ];
 
+// Fixed areas, measured from the city's coordinates (its centre, the old town
+// in the seeded cities). No geocoder call.
 const AREAS: { word: string; label: string }[] = [
   { word: 'center', label: 'Near center' },
   { word: 'centre', label: 'Near center' },
+  { word: 'центр', label: 'Near center' },
+  { word: 'центре', label: 'Near center' },
+  { word: 'центра', label: 'Near center' },
+  { word: 'центру', label: 'Near center' },
+  { word: 'центром', label: 'Near center' },
   { word: 'old town', label: 'Near Old Town' },
 ];
+
+// Any other place: the text after one of these, up to a comma or semicolon.
+// A dot doesn't end it, since addresses have them ("Panerių g. 45").
+const NEAR = new RegExp(
+  `${NOT_WORD_BEFORE}(?:near|close to|next to|рядом с|возле|около|недалеко от)\\s+([^,;]+)`,
+  'iu',
+);
+// Where the place ends inside its clause: "near Paneriu 45 on saturday".
+const PLACE_END = new RegExp(
+  `\\s+(?:on|for|under|below|up to|max|до|${DAYS.map(({ word }) => word).join('|')})${NOT_WORD_AFTER}`,
+  'iu',
+);
+// The user's own location is the browser's job, not the geocoder's.
+const NOT_PLACES = ['me', 'here', 'you'];
 
 // Mock: words that point to a subcategory without naming it, by category and
 // subcategory slug from the seed. An alias match beats any plain name match.
@@ -84,20 +135,42 @@ const wordIndex = (text: string, term: string): number =>
     ),
   );
 
-// The label of the word that occurs first in `text`.
-const firstLabel = (
+// The entry whose word occurs first in `text`.
+const firstMatch = <T extends { word: string }>(
   text: string,
-  words: { word: string; label: string }[],
-): string | null => {
-  let best: { index: number; label: string } | null = null;
-  for (const { word, label } of words) {
-    const index = wordIndex(text, word);
+  words: T[],
+): T | null => {
+  let best: { index: number; entry: T } | null = null;
+  for (const entry of words) {
+    const index = wordIndex(text, entry.word);
     if (index >= 0 && (!best || index < best.index)) {
-      best = { index, label };
+      best = { index, entry };
     }
   }
 
-  return best?.label ?? null;
+  return best?.entry ?? null;
+};
+
+// The place after "near" and the like, in the query's own case, or null.
+const parsePlace = (query: string): string | null => {
+  const match = NEAR.exec(query);
+  if (!match) {
+    return null;
+  }
+
+  const clause = match[1];
+  const end = clause.search(PLACE_END);
+  const place = (end >= 0 ? clause.slice(0, end) : clause)
+    .trim()
+    .replace(/^the\s+/i, '');
+  if (
+    !/[\p{L}\p{N}]/u.test(place) ||
+    NOT_PLACES.includes(place.toLowerCase())
+  ) {
+    return null;
+  }
+
+  return place;
 };
 
 const parsePriceMax = (text: string): number | null => {
@@ -144,6 +217,7 @@ class SearchService {
   constructor(
     private readonly searchSuggestionRepository: SearchSuggestionRepository,
     private readonly categoryRepository: CategoryRepository,
+    private readonly geocodingService: GeocodingService,
   ) {}
 
   // An unknown city is not an error: it matches only global suggestions.
@@ -167,13 +241,19 @@ class SearchService {
     );
   }
 
-  // Mock: replaced by an LLM later. `query.city` is unused here, the LLM
-  // version will need it.
+  // Mock: replaced by an LLM later. The city gives the timezone for day words
+  // and the point a place is looked up around.
   async parse(query: SearchParseQueryDTO): Promise<SearchParseResult> {
+    const city = CITIES.find((candidate) => candidate.slug === query.city);
+    if (!city) {
+      throw new NotFoundException('City not found');
+    }
+
     const text = query.q.toLowerCase();
-    const [categories, subcategories] = await Promise.all([
+    const [categories, subcategories, area] = await Promise.all([
       this.categoryRepository.findAll(),
       this.categoryRepository.findAllSubcategories(),
+      this.parseArea(query.q, city),
     ]);
 
     const categoryCandidates: TermCandidate[] = categories.flatMap(
@@ -227,8 +307,8 @@ class SearchService {
     // Kept on clarify too, so they apply once the user picks a category.
     const extras: SearchExtras = {
       priceMax: parsePriceMax(text),
-      day: firstLabel(text, DAYS),
-      area: firstLabel(text, AREAS),
+      ...this.parseDay(text, localNow(city.timezone)),
+      ...area,
     };
     if (!match) {
       return { status: 'clarify', categories, ...extras };
@@ -236,6 +316,54 @@ class SearchService {
 
     const { category, subcategory } = match;
     return { status: 'ok', category, subcategory, ...extras };
+  }
+
+  private parseDay(
+    text: string,
+    now: LocalNow,
+  ): Pick<SearchExtras, 'day' | 'dateFrom' | 'dateTo'> {
+    const day = firstMatch(text, DAYS);
+    if (!day) {
+      return { day: null, dateFrom: null, dateTo: null };
+    }
+
+    const [from, to] = day.offsets(now);
+    return {
+      day: day.label,
+      dateFrom: addDays(now.date, from),
+      dateTo: addDays(now.date, to),
+    };
+  }
+
+  // A fixed area beats a place, so "near the center" never reaches the geocoder.
+  private async parseArea(
+    query: string,
+    city: CitySeed,
+  ): Promise<Pick<SearchExtras, 'area' | 'origin' | 'geocoded'>> {
+    const fixed = firstMatch(query.toLowerCase(), AREAS);
+    if (fixed) {
+      return {
+        area: fixed.label,
+        origin: { lat: city.lat, lng: city.lng },
+        geocoded: false,
+      };
+    }
+
+    const place = parsePlace(query);
+    if (!place) {
+      return { area: null, origin: null, geocoded: false };
+    }
+
+    const found = await this.geocodingService.geocode(place, city);
+    if (!found) {
+      return { area: `Near ${place}`, origin: null, geocoded: false };
+    }
+
+    return {
+      area: `Near ${found.label}`,
+      origin: { lat: found.lat, lng: found.lng },
+      geocoded: true,
+    };
   }
 }
 
