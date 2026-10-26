@@ -101,6 +101,24 @@
     }
   }
 
+  &__slot {
+    display: inline-flex;
+    align-items: center;
+    // Flex drops the space between the text and <time>
+    gap: 4px;
+    height: 30px;
+    margin: 0px;
+    padding: 0px 12px;
+    border: 1px solid #e5e3df;
+    border-radius: 999px;
+    font-size: 14px;
+    color: #1a1a1a;
+
+    time {
+      font-weight: 500;
+    }
+  }
+
   &__explanation {
     align-self: stretch;
     margin: 0px;

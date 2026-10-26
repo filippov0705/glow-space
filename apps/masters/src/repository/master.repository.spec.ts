@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import MasterRepository, {
   MASTERS_PAGE_ORDER,
   MastersPageParams,
+  SLOT_STEP_MINUTES,
 } from './master.repository';
 
 describe('MasterRepository', () => {
@@ -14,6 +15,7 @@ describe('MasterRepository', () => {
       subcategoryId: null,
       priceMax: null,
       origin: { lat: 54.6872, lng: 25.2797 },
+      slots: null,
       sort: 'top_rated',
       offset: 8,
       limit: 4,
@@ -129,15 +131,32 @@ describe('MasterRepository', () => {
 
     it('maps rows and converts the bigint total', async () => {
       queryRaw.mockResolvedValue([
-        { total: BigInt(11), id: 3, min_price: 1500, currency: 'EUR' },
-        { total: BigInt(11), id: 1, min_price: 2000, currency: 'EUR' },
+        {
+          total: BigInt(11),
+          id: 3,
+          min_price: 1500,
+          currency: 'EUR',
+          next_slot: '2026-10-24T12:00',
+        },
+        {
+          total: BigInt(11),
+          id: 1,
+          min_price: 2000,
+          currency: 'EUR',
+          next_slot: null,
+        },
       ]);
 
       await expect(repository.findPage(params)).resolves.toEqual({
         total: 11,
         rows: [
-          { id: 3, minPrice: 1500, currency: 'EUR' },
-          { id: 1, minPrice: 2000, currency: 'EUR' },
+          {
+            id: 3,
+            minPrice: 1500,
+            currency: 'EUR',
+            nextSlot: '2026-10-24T12:00',
+          },
+          { id: 1, minPrice: 2000, currency: 'EUR', nextSlot: null },
         ],
       });
       expect(sentQuery().values.slice(-2)).toEqual([8, 4]);
@@ -145,7 +164,13 @@ describe('MasterRepository', () => {
 
     it('keeps the total and drops the null row when the offset is past the end', async () => {
       queryRaw.mockResolvedValue([
-        { total: BigInt(3), id: null, min_price: null, currency: null },
+        {
+          total: BigInt(3),
+          id: null,
+          min_price: null,
+          currency: null,
+          next_slot: null,
+        },
       ]);
 
       await expect(
@@ -159,6 +184,79 @@ describe('MasterRepository', () => {
       expect(compact(sentQuery().sql)).toContain(
         'ARRAY_AGG(o.currency ORDER BY o.price, o.id)',
       );
+    });
+
+    it('keeps every offered master and no slot without slots', async () => {
+      await repository.findPage(params);
+
+      const sql = compact(sentQuery().sql);
+      expect(sql).toContain(
+        'eligible AS ( SELECT ofr.*, NULL::text AS next_slot FROM offered ofr )',
+      );
+      expect(sql).not.toContain('working_hours');
+      expect(sql).not.toContain('bookings');
+    });
+
+    describe('with slots', () => {
+      const slots = {
+        dateFrom: '2026-10-24',
+        dateTo: '2026-10-25',
+        now: '2026-10-21T12:00',
+      };
+
+      it('keeps only masters with a free slot and returns the earliest', async () => {
+        await repository.findPage({ ...params, slots });
+
+        const query = sentQuery();
+        const sql = compact(query.sql);
+        expect(sql).toContain('JOIN free f ON f.master_id = ofr.id');
+        expect(sql).toContain(
+          `to_char(f.next_slot, 'YYYY-MM-DD"T"HH24:MI') AS next_slot`,
+        );
+        expect(sql).toContain('generate_series( ?::date, ?::date');
+        expect(sql).toContain('WHERE s.starts_at > ?::timestamp');
+        expect(query.values).toEqual(
+          expect.arrayContaining([
+            '2026-10-24',
+            '2026-10-25',
+            '2026-10-21T12:00',
+            SLOT_STEP_MINUTES,
+          ]),
+        );
+      });
+
+      it("sizes slots by the master's shortest offered offering", async () => {
+        await repository.findPage({ ...params, slots });
+
+        const sql = compact(sentQuery().sql);
+        expect(sql).toContain('MIN(o.duration_min) AS min_duration');
+        expect(sql).toContain(
+          'i.ends_at - make_interval(mins => i.min_duration)',
+        );
+      });
+
+      it('lets a schedule exception replace the weekly hours of its date', async () => {
+        await repository.findPage({ ...params, slots });
+
+        const sql = compact(sentQuery().sql);
+        expect(sql).toContain(
+          'se.master_id = ofr.id AND se.date = dy.day AND NOT se.is_day_off',
+        );
+        expect(sql).toContain(
+          'WHERE NOT EXISTS ( SELECT 1 FROM schedule_exceptions se WHERE se.master_id = ofr.id AND se.date = dy.day )',
+        );
+        expect(sql).toContain('wh.weekday = EXTRACT(ISODOW FROM dy.day)');
+      });
+
+      it('skips slots overlapping active bookings', async () => {
+        await repository.findPage({ ...params, slots });
+
+        const sql = compact(sentQuery().sql);
+        expect(sql).toContain("b.status IN ('PENDING', 'CONFIRMED')");
+        expect(sql).toContain(
+          'tsrange(b.starts_at, b.ends_at) && tsrange( s.starts_at, s.starts_at + make_interval(mins => i.min_duration) )',
+        );
+      });
     });
   });
 

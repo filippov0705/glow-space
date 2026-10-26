@@ -48,6 +48,8 @@ export type MasterListCardResponse = MasterCardResponse & {
   subcategories: SubcategoryResponse[];
   minPrice: number; // in cents
   currency: string; // ISO 4217 code
+  // Earliest free slot within dateFrom..dateTo, local YYYY-MM-DDTHH:MM; null without dates
+  nextSlot: string | null;
 };
 
 export type MastersListResponse = {

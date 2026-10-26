@@ -26,7 +26,10 @@ export type SearchParams = {
   category?: string;
   // Chip kinds removed with ×
   without: SearchChipKind[];
-  sort: MasterSort;
+  // Undefined until the user picks one: the default then depends on the
+  // query (nearest when it names a place)
+  sort?: MasterSort;
+  // The browser location, with the nearest sort only
   origin?: Origin;
 };
 
@@ -35,6 +38,9 @@ export type SearchFilters = {
   category?: string;
   subcategory?: string;
   priceMax?: number; // in cents
+  // Local dates of a free slot, YYYY-MM-DD, inclusive
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -61,25 +67,30 @@ export function parseSearchParams(raw: RawSearchParams): SearchParams | null {
         ? withoutRaw
         : [withoutRaw];
   const without = [...new Set(withoutList.filter(isChipKind))];
-  const sort = parseSort(first(raw.sort));
+  const rawSort = first(raw.sort);
+  const sort = rawSort === undefined ? undefined : parseSort(rawSort);
 
   return {
     q,
     category: isSlug(category) ? category : undefined,
     without,
     sort,
-    origin: parseOrigin(sort, first(raw.lat), first(raw.lng)),
+    origin: parseOrigin(
+      sort ?? DEFAULT_SORT,
+      first(raw.lat),
+      first(raw.lng),
+    ),
   };
 }
 
-// The default sort is left out so the plain URL stays canonical.
+// The sort is set only once picked, so the plain URL stays canonical.
 // lat/lng are kept only with the nearest sort.
 export function searchHref(params: SearchParams): string {
   const query = new URLSearchParams({ q: params.q });
   if (params.category) query.set("category", params.category);
   for (const kind of params.without) query.append("without", kind);
-  if (params.sort !== DEFAULT_SORT) query.set("sort", params.sort);
-  setOriginParams(query, params.sort, params.origin);
+  if (params.sort) query.set("sort", params.sort);
+  setOriginParams(query, params.sort ?? DEFAULT_SORT, params.origin);
   return `/search?${query}`;
 }
 

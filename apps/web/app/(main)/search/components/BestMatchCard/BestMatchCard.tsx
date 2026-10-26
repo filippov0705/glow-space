@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { MasterListCardResponse } from "@glow-space/shared";
 import MasterCover from "@/app/components/MasterCardParts/MasterCover";
 import MasterRating from "@/app/components/MasterCardParts/MasterRating";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatSlot } from "@/lib/format";
 import styles from "./BestMatchCard.module.scss";
 
 type BestMatchCardProps = {
@@ -14,7 +14,7 @@ type BestMatchCardProps = {
 // TODO: link to the master's profile once the route exists
 const PROFILE_HREF = "#";
 
-// Time slots from the mockup aren't shown: there is no schedule data.
+// The free slot shows only when the search has a day.
 export default function BestMatchCard({
   master,
   subtitle,
@@ -44,6 +44,13 @@ export default function BestMatchCard({
             from {formatPrice(master.minPrice, master.currency)}
           </p>
         </div>
+
+        {master.nextSlot && (
+          <p className={styles.card__slot}>
+            Free from
+            <time dateTime={master.nextSlot}>{formatSlot(master.nextSlot)}</time>
+          </p>
+        )}
 
         <p className={styles.card__explanation}>{explanation}</p>
 

@@ -73,6 +73,93 @@ function distanceKmSql(origin: Coordinates): Prisma.Sql {
     )))`;
 }
 
+// Free slots start on this grid, counted from the start of a working interval.
+export const SLOT_STEP_MINUTES = 30;
+
+export type MastersPageSlots = {
+  // Local dates, YYYY-MM-DD, inclusive
+  dateFrom: string;
+  dateTo: string;
+  // Local YYYY-MM-DDTHH:MM in the city; a slot must start after it.
+  now: string;
+};
+
+// The "eligible" CTE: the offered masters, or only those with a free slot in the dates,
+// with the earliest one as local YYYY-MM-DDTHH:MM text.
+//
+// A slot is as long as the master's shortest offered offering, starts on the
+// SLOT_STEP_MINUTES grid from the start of a working interval, ends inside it, starts after
+// `now`, and overlaps no PENDING or CONFIRMED booking (half-open ranges, as in the bookings
+// EXCLUDE constraint). A schedule exception replaces the weekly hours of its date: a day off
+// has no interval, otherwise its single interval is used.
+function eligibleSql(slots: MastersPageSlots | null): Prisma.Sql {
+  if (slots === null) {
+    return Prisma.sql`
+      eligible AS (
+        SELECT ofr.*, NULL::text AS next_slot FROM offered ofr
+      )`;
+  }
+
+  return Prisma.sql`
+    days AS (
+      SELECT d::date AS day
+      FROM generate_series(
+        ${slots.dateFrom}::date, ${slots.dateTo}::date, interval '1 day'
+      ) d
+    ),
+    intervals AS (
+      SELECT
+        ofr.id AS master_id,
+        ofr.min_duration,
+        dy.day + se.start_time::time AS starts_at,
+        dy.day + se.end_time::time AS ends_at
+      FROM offered ofr
+      CROSS JOIN days dy
+      JOIN schedule_exceptions se
+        ON se.master_id = ofr.id AND se.date = dy.day AND NOT se.is_day_off
+      UNION ALL
+      SELECT
+        ofr.id,
+        ofr.min_duration,
+        dy.day + wh.start_time::time,
+        dy.day + wh.end_time::time
+      FROM offered ofr
+      CROSS JOIN days dy
+      JOIN working_hours wh
+        ON wh.master_id = ofr.id AND wh.weekday = EXTRACT(ISODOW FROM dy.day)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM schedule_exceptions se
+        WHERE se.master_id = ofr.id AND se.date = dy.day
+      )
+    ),
+    free AS (
+      SELECT i.master_id, MIN(s.starts_at) AS next_slot
+      FROM intervals i
+      CROSS JOIN LATERAL generate_series(
+        i.starts_at,
+        i.ends_at - make_interval(mins => i.min_duration),
+        make_interval(mins => ${SLOT_STEP_MINUTES}::int)
+      ) AS s(starts_at)
+      WHERE s.starts_at > ${slots.now}::timestamp
+        AND NOT EXISTS (
+          SELECT 1 FROM bookings b
+          WHERE b.master_id = i.master_id
+            AND b.status IN ('PENDING', 'CONFIRMED')
+            AND tsrange(b.starts_at, b.ends_at)
+              && tsrange(
+                s.starts_at,
+                s.starts_at + make_interval(mins => i.min_duration)
+              )
+        )
+      GROUP BY i.master_id
+    ),
+    eligible AS (
+      SELECT ofr.*, to_char(f.next_slot, 'YYYY-MM-DD"T"HH24:MI') AS next_slot
+      FROM offered ofr
+      JOIN free f ON f.master_id = ofr.id
+    )`;
+}
+
 export type MastersPageParams = {
   cityId: number;
   // When set, only offerings in this category count, for eligibility, the price and the
@@ -86,6 +173,8 @@ export type MastersPageParams = {
   // Point the distance is measured from. The distance is always computed but only used to
   // order by `nearest`, so the origin is required for every sort.
   origin: Coordinates;
+  // When set, only masters with a free slot in these dates count. See eligibleSql.
+  slots: MastersPageSlots | null;
   sort: MasterSort;
   offset: number;
   limit: number;
@@ -95,6 +184,7 @@ export type MastersPageRow = {
   id: number;
   minPrice: number;
   currency: string;
+  nextSlot: string | null; // null without slots
 };
 
 export type MastersPageResult = {
@@ -109,6 +199,7 @@ type MastersPageRawRow = {
   id: number | null;
   min_price: number | null;
   currency: string | null;
+  next_slot: string | null;
 };
 
 @Injectable()
@@ -155,8 +246,9 @@ class MasterRepository {
   }
 
   // One page of active masters in the city with at least one active offering (in the category
-  // and the subcategory, and up to priceMax, when given). minPrice is the cheapest of those
-  // offerings, total is the count of all such masters (also when the offset is past the end).
+  // and the subcategory, and up to priceMax, when given) and, with slots, a free slot for one
+  // of them. minPrice is the cheapest of those offerings, total is the count of all such
+  // masters (also when the offset is past the end).
   // The average rating for top_rated is taken over the city (or the category in it) and
   // ignores the subcategory and the price.
   async findPage(params: MastersPageParams): Promise<MastersPageResult> {
@@ -166,6 +258,7 @@ class MasterRepository {
       subcategoryId,
       priceMax,
       origin,
+      slots,
       sort,
       offset,
       limit,
@@ -182,7 +275,7 @@ class MasterRepository {
       priceMax === null ? Prisma.empty : Prisma.sql`AND o.price <= ${priceMax}`;
 
     const rows = await this.prisma.$queryRaw<MastersPageRawRow[]>`
-      WITH eligible AS (
+      WITH offered AS (
         SELECT
           m.id,
           m.rating,
@@ -190,7 +283,8 @@ class MasterRepository {
           m.created_at,
           ${distanceKmSql(origin)} AS distance_km,
           MIN(o.price) AS min_price,
-          (ARRAY_AGG(o.currency ORDER BY o.price, o.id))[1] AS currency
+          (ARRAY_AGG(o.currency ORDER BY o.price, o.id))[1] AS currency,
+          MIN(o.duration_min) AS min_duration
         FROM masters m
         JOIN offerings o ON o.master_id = m.id
         WHERE m.city_id = ${cityId}
@@ -201,6 +295,7 @@ class MasterRepository {
           ${priceFilter}
         GROUP BY m.id
       ),
+      ${eligibleSql(slots)},
       prior AS (
         SELECT AVG(m.rating) AS avg_rating
         FROM masters m
@@ -217,13 +312,14 @@ class MasterRepository {
       counted AS (
         SELECT COUNT(*) AS total FROM eligible
       )
-      SELECT c.total, page.id, page.min_price, page.currency
+      SELECT c.total, page.id, page.min_price, page.currency, page.next_slot
       FROM counted c
       LEFT JOIN LATERAL (
         SELECT
           e.id,
           e.min_price,
           e.currency,
+          e.next_slot,
           ROW_NUMBER() OVER (ORDER BY ${MASTERS_PAGE_ORDER[sort]}) AS position
         FROM eligible e
         CROSS JOIN prior p
@@ -236,10 +332,10 @@ class MasterRepository {
 
     return {
       total: rows.length > 0 ? Number(rows[0].total) : 0,
-      rows: rows.flatMap(({ id, min_price, currency }) =>
+      rows: rows.flatMap(({ id, min_price, currency, next_slot }) =>
         id === null || min_price === null || currency === null
           ? []
-          : [{ id, minPrice: min_price, currency }],
+          : [{ id, minPrice: min_price, currency, nextSlot: next_slot }],
       ),
     };
   }

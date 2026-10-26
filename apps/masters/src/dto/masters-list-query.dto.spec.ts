@@ -25,6 +25,8 @@ describe('MastersListQueryDTO', () => {
     expect(dto.priceMax).toBeUndefined();
     expect(dto.lat).toBeUndefined();
     expect(dto.lng).toBeUndefined();
+    expect(dto.dateFrom).toBeUndefined();
+    expect(dto.dateTo).toBeUndefined();
     await expect(validate(dto)).resolves.toEqual([]);
   });
 
@@ -122,6 +124,32 @@ describe('MastersListQueryDTO', () => {
     await expect(
       invalidProperties({ lat: '-91', lng: '181' }),
     ).resolves.toEqual(['lat', 'lng']);
+  });
+
+  it('accepts dateFrom and dateTo as YYYY-MM-DD', async () => {
+    const dto = toDto({ dateFrom: '2026-10-24', dateTo: '2026-10-25' });
+
+    expect(dto.dateFrom).toBe('2026-10-24');
+    expect(dto.dateTo).toBe('2026-10-25');
+    await expect(validate(dto)).resolves.toEqual([]);
+  });
+
+  it.each(['2026-02-30', '2026-10-24T10:00', '24.10.2026', '20261024', ''])(
+    'rejects the date %p',
+    async (date) => {
+      await expect(
+        invalidProperties({ dateFrom: date, dateTo: '2026-10-25' }),
+      ).resolves.toEqual(['dateFrom']);
+    },
+  );
+
+  it('requires dateFrom and dateTo together', async () => {
+    await expect(
+      invalidProperties({ dateFrom: '2026-10-24' }),
+    ).resolves.toEqual(['dateTo']);
+    await expect(invalidProperties({ dateTo: '2026-10-24' })).resolves.toEqual([
+      'dateFrom',
+    ]);
   });
 
   it('requires lat and lng together', async () => {

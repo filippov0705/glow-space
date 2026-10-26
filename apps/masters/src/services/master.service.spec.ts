@@ -139,8 +139,8 @@ describe('MasterService', () => {
       masterRepository.findPage.mockResolvedValue({
         total: 30,
         rows: [
-          { id: 7, minPrice: 2500, currency: 'EUR' },
-          { id: 3, minPrice: 4000, currency: 'EUR' },
+          { id: 7, minPrice: 2500, currency: 'EUR', nextSlot: null },
+          { id: 3, minPrice: 4000, currency: 'EUR', nextSlot: null },
         ],
       });
       masterRepository.findCategoryCardsByIds.mockResolvedValue([
@@ -151,8 +151,8 @@ describe('MasterService', () => {
       await expect(service.getList(query)).resolves.toEqual({
         total: 30,
         masters: [
-          { id: 7, minPrice: 2500, currency: 'EUR' },
-          { id: 3, minPrice: 4000, currency: 'EUR' },
+          { id: 7, minPrice: 2500, currency: 'EUR', nextSlot: null },
+          { id: 3, minPrice: 4000, currency: 'EUR', nextSlot: null },
         ],
       });
       expect(categoryRepository.findBySlug).not.toHaveBeenCalled();
@@ -162,6 +162,7 @@ describe('MasterService', () => {
         subcategoryId: null,
         priceMax: null,
         origin: { lat: 54.6872, lng: 25.2797 },
+        slots: null,
         sort: 'top_rated',
         offset: 0,
         limit: 12,
@@ -191,6 +192,7 @@ describe('MasterService', () => {
         subcategoryId: null,
         priceMax: null,
         origin: { lat: 54.7, lng: 25.3 },
+        slots: null,
         sort: 'nearest',
         offset: 12,
         limit: 12,
@@ -200,7 +202,7 @@ describe('MasterService', () => {
     it('filters by subcategory and price and loads cards of the category', async () => {
       masterRepository.findPage.mockResolvedValue({
         total: 1,
-        rows: [{ id: 7, minPrice: 2500, currency: 'EUR' }],
+        rows: [{ id: 7, minPrice: 2500, currency: 'EUR', nextSlot: null }],
       });
       masterRepository.findCategoryCardsByIds.mockResolvedValue([card(7)]);
 
@@ -263,15 +265,15 @@ describe('MasterService', () => {
       masterRepository.findPage.mockResolvedValue({
         total: 2,
         rows: [
-          { id: 1, minPrice: 1000, currency: 'EUR' },
-          { id: 2, minPrice: 2000, currency: 'EUR' },
+          { id: 1, minPrice: 1000, currency: 'EUR', nextSlot: null },
+          { id: 2, minPrice: 2000, currency: 'EUR', nextSlot: null },
         ],
       });
       masterRepository.findCategoryCardsByIds.mockResolvedValue([card(2)]);
 
       await expect(service.getList(query)).resolves.toEqual({
         total: 2,
-        masters: [{ id: 2, minPrice: 2000, currency: 'EUR' }],
+        masters: [{ id: 2, minPrice: 2000, currency: 'EUR', nextSlot: null }],
       });
     });
 
@@ -291,6 +293,73 @@ describe('MasterService', () => {
         service.getList({ ...query, city: 'atlantis' }),
       ).rejects.toThrow(NotFoundException);
       expect(masterRepository.findPage).not.toHaveBeenCalled();
+    });
+
+    describe('free slot dates', () => {
+      beforeEach(() => {
+        // Wednesday 2026-10-21, 12:00 in Vilnius.
+        jest.useFakeTimers({ now: new Date('2026-10-21T09:00:00Z') });
+        masterRepository.findPage.mockResolvedValue({ total: 0, rows: [] });
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it("passes the dates with the city's local now", async () => {
+        await service.getList({
+          ...query,
+          dateFrom: '2026-10-24',
+          dateTo: '2026-10-25',
+        });
+
+        expect(masterRepository.findPage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            slots: {
+              dateFrom: '2026-10-24',
+              dateTo: '2026-10-25',
+              now: '2026-10-21T12:00',
+            },
+          }),
+        );
+      });
+
+      it('accepts today and a range of 7 days', async () => {
+        await service.getList({
+          ...query,
+          dateFrom: '2026-10-21',
+          dateTo: '2026-10-27',
+        });
+
+        expect(masterRepository.findPage).toHaveBeenCalled();
+      });
+
+      it("takes today in the city's timezone, not the server's", async () => {
+        // Tuesday 22:30 UTC is already Wednesday in Vilnius.
+        jest.setSystemTime(new Date('2026-10-20T22:30:00Z'));
+
+        await expect(
+          service.getList({
+            ...query,
+            dateFrom: '2026-10-20',
+            dateTo: '2026-10-20',
+          }),
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it.each([
+        ['in the past', '2026-10-20', '2026-10-21'],
+        ['ending before it starts', '2026-10-24', '2026-10-23'],
+        ['longer than 7 days', '2026-10-21', '2026-10-28'],
+      ])(
+        'throws BadRequestException for a range %s',
+        async (_, dateFrom, dateTo) => {
+          await expect(
+            service.getList({ ...query, dateFrom, dateTo }),
+          ).rejects.toThrow(BadRequestException);
+          expect(masterRepository.findPage).not.toHaveBeenCalled();
+        },
+      );
     });
   });
 });

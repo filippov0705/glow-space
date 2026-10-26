@@ -172,6 +172,7 @@ describe('CategoryService', () => {
         subcategoryId: null,
         priceMax: null,
         origin: { lat: 54.6872, lng: 25.2797 },
+        slots: null,
         sort: 'price_asc',
         offset: 8,
         limit: 8,
