@@ -29,6 +29,7 @@ export type {
   MasterListCardResponse,
   MastersListResponse,
   CityWithCountResponse,
+  MasterProfileResponse,
 } from "./responses/masters.js";
 export { CITIES } from "./data/cities.js";
 export type { CitySeed } from "./data/cities.js";

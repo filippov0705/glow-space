@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MasterSort, MasterStatus } from '@glow-space/shared';
-import { Prisma } from 'src/generated/prisma';
+import { Prisma, Review } from 'src/generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Coordinates, EARTH_RADIUS_KM } from '../utils/haversine';
 
@@ -37,6 +37,41 @@ function categoryMasterCardArgs(categoryId: number | null) {
 export type CategoryMasterCard = Prisma.MasterGetPayload<
   ReturnType<typeof categoryMasterCardArgs>
 >;
+
+// Data for the master profile page: categories and languages in display order, the first
+// works plus the total work count, and active offerings (cheapest first, then id) with
+// their subcategory.
+export const PROFILE_WORKS_LIMIT = 6;
+
+const masterProfileArgs = {
+  include: {
+    categories: {
+      include: { category: true },
+      orderBy: { category: { sortOrder: 'asc' } },
+    },
+    languages: {
+      include: { language: true },
+      orderBy: { language: { sortOrder: 'asc' } },
+    },
+    works: {
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      take: PROFILE_WORKS_LIMIT,
+    },
+    offerings: {
+      where: { isActive: true },
+      include: { subcategory: true },
+      orderBy: [{ price: 'asc' }, { id: 'asc' }],
+    },
+    _count: { select: { works: true } },
+  },
+} satisfies Prisma.MasterDefaultArgs;
+
+export type MasterProfile = Prisma.MasterGetPayload<typeof masterProfileArgs>;
+
+export type RatingCount = {
+  rating: number;
+  count: number;
+};
 
 // Weight of the city or category average in the Bayesian top_rated score,
 // in "virtual reviews".
@@ -253,6 +288,36 @@ class MasterRepository {
     return await this.prisma.master.findMany({
       where: { id: { in: ids } },
       ...categoryMasterCardArgs(categoryId),
+    });
+  }
+
+  // Any status; the caller decides who can be opened.
+  async findProfileByUuid(uuid: string): Promise<MasterProfile | null> {
+    return await this.prisma.master.findUnique({
+      where: { uuid },
+      ...masterProfileArgs,
+    });
+  }
+
+  // Review count per rating, star-only reviews included. Ratings without reviews are absent.
+  async countReviewsByRating(masterId: number): Promise<RatingCount[]> {
+    const rows = await this.prisma.review.groupBy({
+      by: ['rating'],
+      where: { masterId },
+      _count: { _all: true },
+    });
+    return rows.map((row) => ({ rating: row.rating, count: row._count._all }));
+  }
+
+  // Newest reviews that have text, newest first.
+  async findLatestTextReviews(
+    masterId: number,
+    limit: number,
+  ): Promise<Review[]> {
+    return await this.prisma.review.findMany({
+      where: { masterId, text: { not: null } },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit,
     });
   }
 

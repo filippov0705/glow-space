@@ -1,0 +1,44 @@
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__title {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 22px;
+    }
+  }
+
+  &__text {
+    margin: 0px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    // Keeps line breaks the master typed
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+  }
+
+  &__pill {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #f6e1e8;
+    font-size: 12px;
+    color: #993556;
+  }
+}

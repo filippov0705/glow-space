@@ -1,0 +1,91 @@
+// Width from which the card shows (key decisions)
+$desktop: 1024px;
+
+.bookingCard {
+  display: none;
+
+  @media (min-width: $desktop) {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid #efedea;
+    border-radius: 14px;
+    background: white;
+  }
+
+  &__price {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.15;
+    color: #1a1a1a;
+  }
+
+  &__slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__label {
+    margin: 0px;
+    font-size: 12px;
+    color: rgb(92, 90, 87);
+  }
+
+  &__chips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+  }
+
+  &__chip {
+    width: 100%;
+    padding: 8px 4px;
+    border: 1px solid #e5e3df;
+    border-radius: 8px;
+    background: white;
+    font: inherit;
+    font-size: 13px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #d4537e;
+      color: #d4537e;
+    }
+  }
+
+  &__book {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #1a1a1a;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+
+    &:hover {
+      background: #333333;
+    }
+  }
+
+  &__chip,
+  &__book {
+    &:focus-visible {
+      outline: 2px solid #d4537e;
+      outline-offset: 2px;
+    }
+  }
+}

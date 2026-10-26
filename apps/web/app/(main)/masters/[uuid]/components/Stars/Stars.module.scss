@@ -1,0 +1,11 @@
+.stars {
+  display: inline-flex;
+  gap: 1px;
+  font-size: var(--stars-size, 12px);
+  line-height: 1;
+  color: #d4537e;
+
+  &__star--empty {
+    color: #e5e3df;
+  }
+}

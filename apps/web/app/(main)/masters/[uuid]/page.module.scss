@@ -1,0 +1,78 @@
+// Width at which the booking card sits beside the sections (key decisions)
+$desktop: 1024px;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  // No max-width: sections line up with the full-width header, whose side paddings
+  // are repeated here
+  padding: 2rem 2rem 3rem;
+
+  @media (max-width: 1280px) {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  &__breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #1a1a1a;
+  }
+
+  &__breadcrumbLink {
+    color: #d4537e;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__breadcrumbSeparator {
+    color: rgb(92, 90, 87);
+  }
+
+  // Below 1024px: one column. From 1024px: sections and the booking card
+  // column, which stays reserved so the sections keep the same width.
+  &__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    margin-top: 10px;
+
+    @media (min-width: $desktop) {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
+
+    @media (min-width: 1280px) {
+      grid-template-columns: minmax(0, 1fr) 340px;
+    }
+  }
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    min-width: 0px;
+
+    @media (max-width: 480px) {
+      gap: 28px;
+    }
+  }
+}

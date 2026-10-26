@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Param,
   Query,
   UsePipes,
   ValidationPipe,
@@ -8,6 +9,7 @@ import {
 import {
   MasterCardResponse,
   MasterMapPointResponse,
+  MasterProfileResponse,
   MastersListResponse,
 } from '@glow-space/shared';
 import MasterService from '../services/master.service';
@@ -61,6 +63,16 @@ class MasterController {
     return masters.map((master) =>
       this.masterResponder.mapPointResponse(master),
     );
+  }
+
+  // Declared after the static routes. A malformed uuid is a 404, checked in the service.
+  @Get(':uuid')
+  async getProfile(
+    @Param('uuid') uuid: string,
+  ): Promise<MasterProfileResponse> {
+    const details = await this.masterService.getProfile(uuid);
+
+    return this.masterResponder.profileResponse(details);
   }
 }
 

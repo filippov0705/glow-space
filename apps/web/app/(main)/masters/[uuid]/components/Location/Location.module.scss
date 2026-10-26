@@ -1,0 +1,62 @@
+.location {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__title {
+    margin: 0px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: #1a1a1a;
+
+    @media (max-width: 480px) {
+      font-size: 22px;
+    }
+  }
+
+  &__address {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0px;
+    font-size: 13px;
+    color: #1a1a1a;
+  }
+
+  &__pin {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  &__frame {
+    position: relative;
+    // keeps Leaflet's internal z-indexes (panes 400, controls 1000) from
+    // overlapping the header and the booking bar
+    isolation: isolate;
+    height: 200px;
+    overflow: hidden;
+    border: 1px solid #e5e3df;
+    border-radius: 14px;
+    background: #f1ebe4;
+  }
+
+  &__map {
+    width: 100%;
+    height: 100%;
+
+    // Leaflet's `.leaflet-container` (0,1,0) sets a #ddd background (seen
+    // while tiles load) and Helvetica. (0,2,0) wins regardless of load order.
+    &:global(.leaflet-container) {
+      background: #f1ebe4;
+      font-family: inherit;
+    }
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f1ebe4;
+  }
+}

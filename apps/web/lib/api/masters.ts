@@ -5,6 +5,7 @@ import {
   CategoryResponse,
   CityWithCountResponse,
   MasterMapPointResponse,
+  MasterProfileResponse,
   MasterSort,
   MastersListResponse,
   SearchParseResponse,
@@ -79,6 +80,20 @@ class MastersApi {
       const response = await this.client.get<CategoryPageResponse>(
         `/categories/${encodeURIComponent(categorySlug)}`,
         { params: { city: citySlug } },
+      );
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 404) return null;
+      throw error;
+    }
+  }
+
+  // null when the master is unknown, not active or the uuid is malformed
+  // (all 404); other errors propagate to the masters error boundary.
+  async getMasterProfile(uuid: string): Promise<MasterProfileResponse | null> {
+    try {
+      const response = await this.client.get<MasterProfileResponse>(
+        `/masters/${encodeURIComponent(uuid)}`,
       );
       return response.data;
     } catch (error) {

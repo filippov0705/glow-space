@@ -11,9 +11,6 @@ type BestMatchCardProps = {
   explanation: string;
 };
 
-// TODO: link to the master's profile once the route exists
-const PROFILE_HREF = "#";
-
 // Time slots from the mockup aren't shown: there is no schedule data.
 export default function BestMatchCard({
   master,
@@ -47,7 +44,7 @@ export default function BestMatchCard({
 
         <p className={styles.card__explanation}>{explanation}</p>
 
-        <Link href={PROFILE_HREF} className={styles.card__button}>
+        <Link href={`/masters/${master.uuid}`} className={styles.card__button}>
           View profile
         </Link>
       </div>

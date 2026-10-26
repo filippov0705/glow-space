@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { BookingModule } from './booking.module';
 import CityRepository from './repository/city.repository';
 import CategoryRepository from './repository/category.repository';
 import MasterRepository from './repository/master.repository';
@@ -17,10 +18,13 @@ import MasterResponder from './responders/master.responder';
 import SearchResponder from './responders/search.responder';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' })],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    PrismaModule,
+    BookingModule,
+  ],
   controllers: [CategoryController, MasterController, SearchController],
   providers: [
-    PrismaService,
     CityRepository,
     CategoryRepository,
     MasterRepository,

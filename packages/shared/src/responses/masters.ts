@@ -60,3 +60,44 @@ export type CityWithCountResponse = {
   name: string;
   mastersCount: number;
 };
+
+// One master's public page: GET /masters/:uuid
+export type MasterProfileResponse = {
+  uuid: string;
+  name: string;
+  photoUrl: string | null;
+  address: string;
+  lat: number;
+  lng: number;
+  categories: { slug: string; name: string }[];
+  subcategories: { slug: string; name: string }[];
+  rating: number | null;
+  reviewsCount: number;
+  about: string | null;
+  experienceYears: number | null;
+  languages: { code: string; name: string }[];
+  works: { imageUrl: string }[]; // at most 6, sortOrder
+  worksCount: number;
+  offerings: {
+    id: string;
+    name: string;
+    durationMin: number;
+    price: number; // cents
+    currency: string;
+  }[];
+  minPrice: number | null; // cents of the cheapest active offering
+  currency: string | null;
+  // Always 5 rows, 5 down to 1, star-only reviews included
+  ratingDistribution: { rating: number; count: number }[];
+  reviews: {
+    id: string;
+    authorName: string;
+    offeringName: string;
+    rating: number;
+    text: string;
+    createdAt: string; // ISO
+    replyText: string | null;
+  }[]; // at most 3, newest with text
+  // Local wall time, no offset. Format from the string parts.
+  nextSlots: { startsAt: string }[];
+};
